@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  EDITOR
+}
+
+enum Category {
+  VEGETABLES
+  FRUITS
+  DAIRY
+  MEAT
+  DRINKS
+  CLEANING
+  OTHER
+}
+
+model User {
+  id          Int            @id @default(autoincrement())
+  name        String?
+  email       String         @unique
+
+  ownedLists  List[]         @relation("UserOwnedLists")
+  memberships ListMember[]
+}
+
+model List {
+  id       Int          @id @default(autoincrement())
+  name     String
+  owner_id Int 
+  
+  user     User         @relation("UserOwnedLists", fields: [owner_id], references: [id])
+  
+  items    Item[] 
+  members  ListMember[]
+}
+
+model ListMember {
+  user_id Int
+  list_id Int
+  role    Role
+
+  user    User  @relation(fields: [user_id], references: [id])
+  list    List  @relation(fields: [list_id], references: [id])
+
+  @@id([user_id, list_id])
+}
+
+model Item {
+  id       Int      @id @default(autoincrement())
+  list_id  Int
+  name     String
+  category Category?
+  quantity Int
+  image    String?
+  checked  Boolean  @default(false)
+
+  list     List     @relation(fields: [list_id], references: [id])
+}
