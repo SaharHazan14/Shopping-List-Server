@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  EDITOR
+}
+
+enum Category {
+  VEGETABLES
+  FRUITS
+  DAIRY
+  MEAT
+  DRINKS
+  CLEANING
+  OTHER
+}
+
+model User {
+  id              Int          @id @default(autoincrement())
+  email           String       @unique
+  password_hash   String
+  name            String
+
+  lists_created   List[]       @relation("ListsCreated")
+  list_roles      UserList[]
+  items_created   Item[]
+}
+
+model List {
+  id            Int          @id @default(autoincrement())
+  title         String
+  description   String?
+  creator_id    Int 
+  
+  creator       User         @relation("ListsCreated", fields: [creator_id], references: [id])
+  
+  users         UserList[]
+  items         ListItem[] 
+}
+
+model UserList {
+  user_id   Int
+  list_id   Int
+  role      Role
+
+  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  list      List   @relation(fields: [list_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, list_id])
+}
+
+model Item {
+  id           Int          @id @default(autoincrement())
+  name         String
+  category     Category?
+  image        String?
+  is_global    Boolean
+  creator_id   Int?
+
+  creator      User?        @relation(fields: [creator_id], references: [id])
+  
+  list_items   ListItem[] 
+}
+
+model ListItem {
+  list_id      Int
+  item_id      Int 
+  quantity     Int 
+  is_checked   Boolean   @default(false)
+
+  list         List      @relation(fields: [list_id], references: [id], onDelete: Cascade)
+  item         Item      @relation(fields: [item_id], references: [id], onDelete: Restrict)
+
+  @@id([list_id, item_id])
+}
