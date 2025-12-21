@@ -49,6 +49,8 @@ model List {
   
   users         UserList[]
   items         ListItem[] 
+
+  @@unique([title, creator_id])
 }
 
 model UserList {

@@ -1,48 +1,77 @@
 import { Role } from "../../../generated/prisma/enums";
+import { BadRequestError, ForbiddenError } from "../../errors";
 import { ListRepository } from "./list.repository";
 
 export class ListService {
     constructor(private readonly repo: ListRepository) {}
 
     async createList(creatorId: number, title: string, description?: string) {
-        if (creatorId <= 0) {
-            throw new Error("Creator ID must be a positive integer")
-        }
+        // check if user exist
         
         if (!title || title.trim() === '') {
-            throw new Error("List title is required")
+            throw new BadRequestError("List title is required")
         }
 
-        // check if user exist
+        const existing = await this.repo.findByCreatorAndTitle(creatorId, title)
 
-        const creatorLists = await this.repo.findByCreator(creatorId)
-
-        for (const list of creatorLists) {
-            if (list.title === title) {
-                throw new Error("A list with this title already exists")
-            }
+        if (existing) {
+            throw new BadRequestError("You already have a list with this title")
         }
 
         return this.repo.create(title, description ?? null, creatorId)
     }
 
-    async getListById(listId: number) {
+    async getListById(listId: number, userId: number) {
+        // check user exists
+
+        const role = await this.repo.findUserRole(userId, listId)
+
+        if (role === null) {
+            throw new ForbiddenError("Access denied")
+        }
+
         return this.repo.findById(listId)
     }
 
-    async getUserLists(userId: number) {  
+    async getUserLists(userId: number, shared: boolean = true) {
+        // check user exists
+        if (!shared) {
+            return this.repo.findByCreator(userId)
+        }
+
         return this.repo.findByUser(userId)
     }
 
-    async getCreatorLists(creatorId: number) {
-        return this.repo.findByCreator(creatorId)
+    async updateListTitle(userId: number, listId: number, newTitle: string) {
+        // check user exists
+        // check list exists
+
+        const role = await this.repo.findUserRole(userId, listId)
+
+        if (role !== Role.OWNER) {
+            throw new ForbiddenError("Access denied - only owners can change list's name")
+        }
+
+        if (!newTitle || newTitle.trim() === '') {
+            throw new BadRequestError("List title is required")
+        }
+
+        const existing = await this.repo.findByCreatorAndTitle(userId, newTitle)
+
+        if (existing) {
+            throw new BadRequestError("You already have a list with this title")
+        }
+
+        return this.repo.updateName(listId, newTitle)
     }
 
     async deleteList(userId: number, listId: number) {
+        // check user exists
+
         const role = await this.repo.findUserRole(userId, listId)
         
         if (!role || role !== Role.OWNER) {
-            throw new Error('Only owners can delete lists')
+            throw new ForbiddenError("Access denied - only owners can delete list")
         }
 
         await this.repo.delete(listId)
