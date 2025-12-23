@@ -1,5 +1,5 @@
 import { Role } from "../../../generated/prisma/enums";
-import { BadRequestError, ForbiddenError } from "../../errors";
+import { BadRequestError, ForbiddenError, NotFoundError } from "../../errors";
 import { ListRepository } from "./list.repository";
 
 export class ListService {
@@ -30,7 +30,13 @@ export class ListService {
             throw new ForbiddenError("Access denied")
         }
 
-        return this.repo.findById(listId)
+        const list = await this.repo.findById(listId)
+        
+        if (list === null) {
+            throw new NotFoundError("List not found")
+        }
+
+        return list
     }
 
     async getUserLists(userId: number, shared: boolean = true) {
@@ -44,7 +50,12 @@ export class ListService {
 
     async updateListTitle(userId: number, listId: number, newTitle: string) {
         // check user exists
-        // check list exists
+
+        const list = await this.repo.findById(listId)
+
+        if (list === null) {
+            throw new NotFoundError("List not found")
+        }
 
         const role = await this.repo.findUserRole(userId, listId)
 
@@ -67,6 +78,11 @@ export class ListService {
 
     async deleteList(userId: number, listId: number) {
         // check user exists
+        const list = await this.repo.findById(listId)
+
+        if (list === null) {
+            throw new NotFoundError("List not found")
+        }
 
         const role = await this.repo.findUserRole(userId, listId)
         
