@@ -22,6 +22,15 @@ export class ListRepository {
         })
     }
 
+    async findByCreatorAndTitle(creatorId: number, title: string): Promise<List | null> {
+        return prisma.list.findFirst({
+            where: {
+                creator_id: creatorId,
+                title: title
+            },
+        })
+    }
+
     async findById(listId: number): Promise<List| null> {
         return prisma.list.findUnique({
             where: {id: listId},
@@ -59,6 +68,13 @@ export class ListRepository {
             },
         })
         return record?.role ?? null
+    }
+
+    async updateName(listId: number, name: string) {
+        return prisma.list.update({
+            where: { id: listId },
+            data: { title: name },
+        });
     }
 
     async delete(listId: number): Promise<void> {
