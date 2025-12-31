@@ -9,4 +9,6 @@ router.get('/', listController.getUserLists)
 router.patch('/:id', listController.updateListTitle)
 router.delete('/:id', listController.deleteList)
 
+router.post('/:id/member', listController.addListMember)
+
 export default router

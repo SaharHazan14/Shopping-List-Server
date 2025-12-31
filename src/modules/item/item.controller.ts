@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { ItemService } from "./item.service";
 import { ItemRepository } from "./item.repository";
 import { Category } from "../../../generated/prisma/enums";

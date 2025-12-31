@@ -1,4 +1,4 @@
-import { List, Role } from "../../../generated/prisma/client";
+import { List, Role, UserList } from "../../../generated/prisma/client";
 import { prisma } from "../../../lib/prisma";
 
 export class ListRepository {
@@ -80,6 +80,16 @@ export class ListRepository {
     async delete(listId: number): Promise<void> {
         await prisma.list.delete({
             where: {id: listId},
+        })
+    }
+
+    async addMember(userId: number, listId: number, role: Role): Promise<UserList>{
+        return prisma.userList.create({
+            data: {
+                user_id: userId,
+                list_id: listId,
+                role: role
+            }
         })
     }
 }

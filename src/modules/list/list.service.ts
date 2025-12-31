@@ -8,6 +8,7 @@ export class ListService {
     async createList(creatorId: number, title: string, description?: string) {
         // check if user exist
         
+        // Is this validation neccessary?
         if (!title || title.trim() === '') {
             throw new BadRequestError("List title is required")
         }
@@ -39,13 +40,23 @@ export class ListService {
         return list
     }
 
-    async getUserLists(userId: number, shared: boolean = true) {
+    async getListByTitle(userId: number, title: string) {
         // check user exists
-        if (!shared) {
-            return this.repo.findByCreator(userId)
+
+        const list = await this.repo.findByCreatorAndTitle(userId, title)
+
+        if (list === null) {
+            throw new NotFoundError("List not found")
         }
 
-        return this.repo.findByUser(userId)
+        return list
+    }
+
+    async getUserLists(userId: number) {
+        // check user exists
+
+        return this.repo.findByCreator(userId)
+
     }
 
     async updateListTitle(userId: number, listId: number, newTitle: string) {
@@ -61,10 +72,6 @@ export class ListService {
 
         if (role !== Role.OWNER) {
             throw new ForbiddenError("Access denied - only owners can change list's name")
-        }
-
-        if (!newTitle || newTitle.trim() === '') {
-            throw new BadRequestError("List title is required")
         }
 
         const existing = await this.repo.findByCreatorAndTitle(userId, newTitle)
@@ -91,5 +98,23 @@ export class ListService {
         }
 
         await this.repo.delete(listId)
+    }
+
+    async addListMember(userId: number, listId: number, memberId: number, memberRole: Role) {
+        // check both users exist
+
+        const list = await this.repo.findById(listId)
+
+        if (list === null) {
+            throw new NotFoundError("List not found")
+        }
+
+        const role = await this.repo.findUserRole(userId, listId)
+        
+        if (!role || role !== Role.OWNER) {
+            throw new ForbiddenError("Access denied - only owners can add list members")
+        }
+
+        return this.repo.addMember(memberId, listId, memberRole)
     }
 }
