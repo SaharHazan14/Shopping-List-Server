@@ -67,14 +67,15 @@ model UserList {
 model Item {
   id           Int          @id @default(autoincrement())
   name         String
-  category     Category?
+  category     Category
   image        String?
-  is_global    Boolean
   creator_id   Int?
 
   creator      User?        @relation(fields: [creator_id], references: [id])
   
-  list_items   ListItem[] 
+  list_items   ListItem[]
+
+  @@unique([name, creator_id]) 
 }
 
 model ListItem {
