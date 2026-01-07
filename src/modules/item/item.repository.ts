@@ -1,5 +1,5 @@
 import { Category, Item } from "../../../generated/prisma/client";
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "../../../prisma/prisma";
 
 export class ItemRepository {
     async create(

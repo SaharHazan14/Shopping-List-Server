@@ -1,75 +1,69 @@
-import { Request, Response, NextFunction } from "express"
+import { Request, Response } from "express"
 import { ListService } from "./list.service"
 import { ListRepository } from "./list.repository"
-import { optionalString, parseStringQuery, requiredIntParam, requiredNonEmptyString, requiredPositiveInt } from "../../validations/common.validations"
-import { parseEnum } from "../../utils/parse-enum"
-import { Role } from "../../../generated/prisma/enums"
+import { CreateListDTO } from "./dto/create-list.dto"
+import { validateCreateListInput, validateGetListByIdParam, validateGetUserListsQuery, validateUpdateListInput } from "../../validators/list.validator"
+import { updateListDTO } from "./dto/update-list.dto"
 
 const service = new ListService(new ListRepository)
 
 class ListController {
     async createList(req: Request, res: Response) {
-        // creatorId should be authenticated and extracted from middleware
-        // meanwhile creatorId extracted from request body
-        const creatorId = req.body.creatorId
+        const { title, description } = validateCreateListInput(req.body)
         
-        const title = requiredNonEmptyString(req.body.title, "title")
-        const description = optionalString(req.body.description, "description")
-    
-        const list = await service.createList(creatorId, title, description)
+        const dto: CreateListDTO = {
+            title,
+            description,
+            userId: req.body.userId // req.user.id 
+        }
 
-        res.status(201).json(list)            
+        const list = await service.createList(dto)
+        res.status(201).json(list)
     }
 
     async getListById(req: Request, res: Response) {
-        // User should be authenticated
-        const userId = req.body.userId
-
-        const listId = requiredIntParam(req.params.id, "id")
+        const listId = validateGetListByIdParam(req.params)
+        
+        const userId = req.body.userId // req.user.id
 
         const list = await service.getListById(listId, userId)
-            
         res.status(200).json(list)
     }
 
     async getUserLists(req: Request, res: Response) {
-        // User should be authenticated
-        const userId = req.body.userId
+        const includeMember = validateGetUserListsQuery(req.query)
 
-        const title = parseStringQuery(req.query.title, "title")
+        const userId = req.body.userId // req.user.id
 
-        if (title) {
-            const list = await service.getListByTitle(userId, title)
-            res.status(200).json(list)
-        } else {
-            const lists = await service.getUserLists(userId)
-            res.status(200).json(lists)
-        }
+        const lists = await service.getUserLists(userId, includeMember)
+        res.status(200).json(lists)
     }
 
-    async updateListTitle(req: Request, res: Response) {
-        // User should be authenticated
-        const userId = req.body.userId
-        
-        const listId = requiredIntParam(req.params.id, "id")
-        const newTitle = requiredNonEmptyString(req.body.newTitle, "newTitle")
+    async updateList(req: Request, res: Response) {
+        const { listId, title, description } = validateUpdateListInput(req.params, req.body)
 
-        const updatedList = await service.updateListTitle(userId, listId, newTitle)
-            
-        res.status(200).json(updatedList)
+        const dto: updateListDTO = {
+            listId: listId, 
+            title: title,
+            description: description
+        }
+
+        const userId = req.body.userId // req.user.id
+
+        const updated = await service.updateList(userId, dto)
+        res.status(200).json(updated)
     }
 
     async deleteList(req: Request, res: Response) {
-        // User should be authenticated
-        const userId = req.body.userId
-        
-        const listId = requiredIntParam(req.params.id, "id")
+        const listId = validateGetListByIdParam(req.params)
 
-        await service.deleteList(userId, Number(listId))
-            
+        const userId = req.body.userId // req.user.id
+
+        await service.deleteList(userId, listId)
         res.status(204).send()
     }
 
+    /*
     async addListMember(req: Request, res: Response) {
         // User should be authenticated
         const userId = req.body.userId
@@ -82,6 +76,53 @@ class ListController {
 
         res.status(201).json(listMember)
     }
+
+    async getListMembers(req: Request, res: Response) {
+        // User should be authenticated
+        const userId = req.body.userId
+
+        const listId = requiredIntParam(req.params.id, "id")
+
+        const listMembers = await service.getListMembers(userId, listId)
+
+        res.status(200).json(listMembers)
+    }
+
+    async getUserListMemberships(req: Request, res: Response) {
+        const userId = req.body.userId
+
+        const userMemberships = await service.getUserListMemberships(userId)
+
+        res.status(200).json(userMemberships)
+    }
+
+    async updateMemberRole(req: Request, res: Response) {
+        const userId = req.body.userId
+
+        const listId = requiredIntParam(req.params.id, "id")
+        const memberId = requiredPositiveInt(req.body.memberId, "memberId")
+        const memberRole = parseEnum(Role, req.body.memberRole, "memberRole")
+
+        const updatedRole = await service.updateMemberRole(userId, listId, memberId, memberRole)
+        
+        res.status(200).json(updatedRole)
+    }
+
+    async removeListMember(req: Request, res: Response) {
+        const userId = req.body.userId
+
+        const listId = requiredIntParam(req.params.id, "id")
+        const memberId = requiredIntParam(req.params.memberId, "memberId")
+
+        await service.removeMember(userId, listId, memberId)
+
+        res.status(204).send()
+    }
+
+    async leaveList(req: Request, res: Response) {
+        
+    }
+    */
 }
 
 export const listController = new ListController()

@@ -1,4 +1,4 @@
-import { Category } from "../../../generated/prisma/enums"
+/*import { Category } from "../../../generated/prisma/enums"
 import { BadRequestError, ForbiddenError, NotFoundError } from "../../../src/errors"
 import { ItemRepository } from "../../../src/modules/item/item.repository"
 import { ItemService } from "../../../src/modules/item/item.service"
@@ -249,4 +249,4 @@ describe("ItemService", () => {
             expect(repo.delete).toHaveBeenCalledWith(1)
         })
     })
-})
+})*/

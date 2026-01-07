@@ -1,24 +1,24 @@
+import { title } from "process";
+import { User } from "../../../generated/prisma/browser";
 import { List, Role, UserList } from "../../../generated/prisma/client";
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "../../../prisma/prisma";
+import { CreateListDTO } from "./dto/create-list.dto";
+import { updateListDTO } from "./dto/update-list.dto";
 
 export class ListRepository {
-    async create(
-        title: string, 
-        description: string | null, 
-        creatorId: number
-    ): Promise<List> {
+    async create(dto: CreateListDTO): Promise<List> {
         return prisma.list.create({
             data: {
-                title: title,
-                description: description,
-                creator_id: creatorId,
+                title: dto.title,
+                description: dto.description,
+                creator_id: dto.userId,
                 users: {
                     create: {
-                        user_id: creatorId,
-                        role: Role.OWNER,
-                    },
-                },
-            },
+                        user_id: dto.userId,
+                        role: Role.OWNER
+                    }
+                }
+            }
         })
     }
 
@@ -27,13 +27,13 @@ export class ListRepository {
             where: {
                 creator_id: creatorId,
                 title: title
-            },
+            }
         })
     }
 
     async findById(listId: number): Promise<List| null> {
         return prisma.list.findUnique({
-            where: {id: listId},
+            where: {id: listId}
         })
     }
 
@@ -70,6 +70,16 @@ export class ListRepository {
         return record?.role ?? null
     }
 
+    async update(dto: updateListDTO) {
+        return prisma.list.update({
+            where: {id: dto.listId},
+            data: { 
+                title: dto.title, 
+                description: dto.description
+            }
+        })
+    }
+
     async updateName(listId: number, name: string) {
         return prisma.list.update({
             where: { id: listId },
@@ -83,12 +93,51 @@ export class ListRepository {
         })
     }
 
-    async addMember(userId: number, listId: number, role: Role): Promise<UserList>{
+    async addMember(userId: number, listId: number, role: Role): Promise<UserList> {
         return prisma.userList.create({
             data: {
                 user_id: userId,
                 list_id: listId,
                 role: role
+            }
+        })
+    }
+
+    async findMembers(listId: number): Promise<UserList[]> {
+        return prisma.userList.findMany({
+            where: {list_id: listId}
+        })
+    }
+
+    async findUserMemberships(userId: number): Promise<UserList[]> {
+        return prisma.userList.findMany({
+            where: {
+                user_id: userId
+            }
+        })
+    }
+
+    async updateMemberRole(userId: number, listId: number, newRole: Role) {
+        return prisma.userList.update({
+            where: {
+                user_id_list_id: {
+                    user_id: userId,
+                    list_id: listId,
+                },
+            },
+            data: {
+                role: newRole
+            }
+        })
+    }
+
+    async removeMember(userId: number, listId: number) {
+        await prisma.userList.delete({
+            where: {
+                user_id_list_id: {
+                    user_id: userId,
+                    list_id: listId
+                }
             }
         })
     }

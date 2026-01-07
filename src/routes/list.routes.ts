@@ -6,9 +6,15 @@ const router = Router();
 router.post('/', listController.createList)
 router.get('/:id', listController.getListById)
 router.get('/', listController.getUserLists)
-router.patch('/:id', listController.updateListTitle)
+router.patch('/:id', listController.updateList)
 router.delete('/:id', listController.deleteList)
 
-router.post('/:id/member', listController.addListMember)
+/*
+post('/:id/member', listController.addListMember)
+router.get('/:id/member', listController.getListMembers)
+// router.get('/member', listController.getUserListMemberships)
+router.patch('/:id/member', listController.updateMemberRole)
+router.delete('/:id/member/:memberId', listController.removeListMember)
+*/
 
 export default router

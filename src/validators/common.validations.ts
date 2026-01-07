@@ -1,13 +1,17 @@
 import { BadRequestError } from "../errors";
 
-export function requiredField(field: unknown, fieldName: string) {
-    if (field === undefined || field === null) {
+export function requireField(field: unknown, fieldName: string) {
+    if (field === undefined) {
         throw new BadRequestError(`${fieldName} is required`)
+    }
+
+    if (field === null) {
+        throw new BadRequestError(`${fieldName} can't be null`)
     }
 }
 
-export function requiredString(field: unknown, fieldName: string): string {
-    requiredField(field, fieldName)
+export function requireString(field: unknown, fieldName: string): string {
+    requireField(field, fieldName)
     
     if (typeof field !== "string") {
         throw new BadRequestError(`${fieldName} must be a string`)
@@ -17,7 +21,7 @@ export function requiredString(field: unknown, fieldName: string): string {
 }
 
 export function requiredNumber(field: unknown, fieldName: string): number {
-    requiredField(field, fieldName)
+    requireField(field, fieldName)
 
     if (typeof field !== "number") {
         throw new BadRequestError(`${field} must be a number`)
@@ -27,7 +31,7 @@ export function requiredNumber(field: unknown, fieldName: string): number {
 }
 
 export function requiredNonEmptyString(field: unknown, fieldName: string): string {
-    const stringField = requiredString(field, fieldName)
+    const stringField = requireString(field, fieldName)
 
     if (stringField.trim() === "") {
         throw new BadRequestError(`${fieldName} cannot be empty`)

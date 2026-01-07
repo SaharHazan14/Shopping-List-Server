@@ -7,13 +7,9 @@ const app = express();
 
 app.use(express.json());
 
-app.use('/list', listRoutes)
+app.use('/lists', listRoutes)
 app.use('/item', itemRoutes)
 
 app.use(errorHandler)
-
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello, Express + TypeScript!');
-});
 
 export default app;

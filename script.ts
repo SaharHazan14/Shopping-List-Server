@@ -1,15 +1,10 @@
-import { Category, Role } from './generated/prisma/enums'
-import { prisma } from './lib/prisma'
-import { ItemRepository } from './src/modules/item/item.repository'
+import { prisma } from './prisma/prisma'
 import { ListRepository } from './src/modules/list/list.repository'
 
 const listRepository = new ListRepository()
-const itemRepository = new ItemRepository()
 
 async function main() {
-    const member = await listRepository.addMember(2, 5, Role.EDITOR)
-
-    console.log(member)
+    
 }
 
 main()
