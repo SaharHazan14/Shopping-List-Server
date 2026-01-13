@@ -20,5 +20,5 @@ export const CreateListSchema = z.object({
         })
         .optional()
         .nullable()
-        .transform((val) => typeof val === "string" && val.trim().length > 0 ? val.trim() : null),
+        .transform((val) => typeof val === "string" && val.trim().length > 0 ? val.trim() : null)
 })

@@ -1,6 +1,9 @@
+import { title } from "process"
+import { List } from "../../../generated/prisma/browser"
 import { Role } from "../../../generated/prisma/enums"
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../../src/errors"
 import { CreateListDTO } from "../../../src/modules/list/dto/create-list.dto"
+import { ListResponseDTO } from "../../../src/modules/list/dto/list-response.dto"
 import { ListRepository } from "../../../src/modules/list/list.repository"
 import { ListService } from "../../../src/modules/list/list.service"
 
@@ -11,12 +14,13 @@ describe("ListService", () => {
     beforeEach(() => {
         repo = {
             create: jest.fn(),
+            existByTitleAndCreator: jest.fn(),
             findByCreatorAndTitle: jest.fn(),
             findUserRole: jest.fn(),
             findById: jest.fn(),
             findByCreator: jest.fn(),
             findByUser: jest.fn(),
-            updateName:jest.fn(),
+            update:jest.fn(),
             delete: jest.fn()
         }
 
@@ -25,12 +29,7 @@ describe("ListService", () => {
 
     describe("createList", () => {
         it("throws if creator already has a list with same title", async () => {
-            repo.findByCreatorAndTitle?.mockResolvedValue({
-                id: 1,
-                title: "Groceries",
-                description: null,
-                creator_id: 1
-            })
+            repo.existByTitleAndCreator?.mockResolvedValue(true)
 
             await expect(
                 service.createList({
@@ -42,7 +41,7 @@ describe("ListService", () => {
         })
 
         it("creates a list when no duplicate exists", async () => {
-            repo.findByCreatorAndTitle?.mockResolvedValue(null)
+            repo.existByTitleAndCreator?.mockResolvedValue(false)
 
             repo.create?.mockResolvedValue({
                 id: 1,
@@ -66,23 +65,9 @@ describe("ListService", () => {
             expect(result.title).toBe("Groceries")
         })
     })
-    /*
+    
     describe("getListById", () => {
-        it("throws if user is not a member in the list", async () => {
-            repo.findUserRole?.mockResolvedValue(null)
-
-            await expect(
-                service.getListById(1, 1)
-            ).rejects.toBeInstanceOf(ForbiddenError)
-
-            expect(
-                repo.findById
-            ).not.toHaveBeenCalled()
-        })
-
-        it("throws if list not found", async () => {
-            repo.findUserRole?.mockResolvedValue(Role.OWNER)
-            
+        it("throws if list not found", async () => { 
             repo.findById?.mockResolvedValue(null)
 
             await expect(
@@ -90,17 +75,32 @@ describe("ListService", () => {
             ).rejects.toBeInstanceOf(NotFoundError)
         })
 
+        it("throws if user is not a member in the list", async () => {
+            repo.findById?.mockResolvedValue({
+                id: 1,
+                title: "Groceries",
+                description: null,
+                creator_id: 1
+            })
+
+            repo.findUserRole?.mockResolvedValue(null)
+
+            await expect(
+                service.getListById(1, 1)
+            ).rejects.toBeInstanceOf(ForbiddenError)
+        })
+
         it("returns list when it exists and user has access", async () => {
-            repo.findUserRole?.mockResolvedValue(Role.OWNER)
-            
             repo.findById?.mockResolvedValue({
                 id: 1,
                 title: "Groceries",
                 description: null,
                 creator_id: 1,
-            } as any)
+            })
 
-            const result = await service.getListById(1, 2)
+            repo.findUserRole?.mockResolvedValue(Role.OWNER)
+
+            const result = await service.getListById(1, 1)
 
             expect(
                 repo.findById
@@ -113,92 +113,92 @@ describe("ListService", () => {
     })
 
     describe("getUserLists", () => {
-        it("returns only created lists when shared is false", async () => {
-            const lists = [{id: 1}, {id: 2}]
+        const lists = [
+                {
+                    id: 1,
+                    title: "Groceries",
+                    description: null,
+                    creator_id: 1
+                },
+                {
+                    id: 2,
+                    title: "Groceries2",
+                    description: null,
+                    creator_id: 1
+                },
+                {
+                    id: 3,
+                    title: "Groceries3",
+                    description: null,
+                    creator_id: 2
+                }
+            ]
 
-            repo.findByCreator?.mockResolvedValue(lists as any)
+        const listsAsRespone: ListResponseDTO[] = lists.map(list => ({
+            id: list.id,
+            title: list.title,
+            description: list.description,
+            creatorId: list.creator_id
+        }))
+
+        it("returns only created lists when includeMember is false", async () => {
+            repo.findByCreator?.mockResolvedValue(lists.slice(0,2))
 
             const result = await service.getUserLists(1, false)
 
             expect(repo.findByCreator).toHaveBeenCalledWith(1)
             expect(repo.findByUser).not.toHaveBeenCalled()
-            expect(result).toBe(lists)
+            expect(result).toStrictEqual(listsAsRespone.slice(0,2))
         })
 
         it("returns all user lists when shared is true", async () => {
-            const lists = [{id: 1}, {id: 2}, {id: 3}]
-
-            repo.findByUser?.mockResolvedValue(lists as any)
+            repo.findByUser?.mockResolvedValue(lists)
 
             const result = await service.getUserLists(1, true)
 
             expect(repo.findByCreator).not.toHaveBeenCalled()
             expect(repo.findByUser).toHaveBeenCalledWith(1)
-            expect(result).toBe(lists)
+            expect(result).toStrictEqual(listsAsRespone)
         })
-
-        it("returns all user lists when shared is default", async () => {
-            const lists = [{id: 1}, {id: 2}, {id: 3}]
-
-            repo.findByUser?.mockResolvedValue(lists as any)
-
-            const result = await service.getUserLists(1)
-
-            expect(repo.findByCreator).not.toHaveBeenCalled()
-            expect(repo.findByUser).toHaveBeenCalledWith(1)
-            expect(result).toBe(lists)
-        })
-    })
+    }) 
 
     describe("updateListTitle", () => {
         it("throws if list not found", async () => {
             repo.findById?.mockResolvedValue(null)
 
             await expect(
-                service.updateListTitle(1, 1, "New Title")
+                service.updateList(1, {listId: 1, title: "New Title"})
             ).rejects.toBeInstanceOf(NotFoundError)
         })
 
         it("throws if user is not OWNER", async () => {
-            repo.findById?.mockResolvedValue({id: 1} as any)
-            repo.findUserRole?.mockResolvedValue(Role.EDITOR)
+            repo.findById?.mockResolvedValue({id: 1, title: "List", description: null, creator_id: 1})
 
             await expect(
-                service.updateListTitle(1, 10, "New title")
+                service.updateList(2, {listId: 1, title: "New Title"})
             ).rejects.toBeInstanceOf(ForbiddenError)
         })
 
-        it("throws if title is empty", async () => {
-            repo.findById?.mockResolvedValue({id : 1} as any)
-            repo.findUserRole?.mockResolvedValue(Role.OWNER)
-
-            await expect(
-                service.updateListTitle(1, 10, "")
-            ).rejects.toBeInstanceOf(BadRequestError)
-        })
-
         it("throws if user already has a list with the same title", async () => {
-            repo.findById?.mockResolvedValue({ id: 1 } as any)
-            repo.findUserRole?.mockResolvedValue(Role.OWNER)
-            repo.findByCreatorAndTitle?.mockResolvedValue({ id: 2 } as any)
+            repo.findById?.mockResolvedValue({id: 1, title: "List", description: null, creator_id: 1})
+            repo.findByCreatorAndTitle?.mockResolvedValue({id: 2, title: "Groceries", description: null, creator_id: 1})
 
             await expect(
-                service.updateListTitle(1, 1, "Groceries")
-            ).rejects.toBeInstanceOf(BadRequestError)
+                service.updateList(1, {listId: 1, title: "Groceries"})
+            ).rejects.toBeInstanceOf(ConflictError)
         })
 
         it("updates list title successfully", async () => {
-            const updated = {id: 1, title: "New Title", creator_id: 1}
+            const updated: ListResponseDTO = {id: 1, title: "New Title", description: null, creatorId: 1}
             
-            repo.findById?.mockResolvedValue({ id: 1 } as any)
-            repo.findUserRole?.mockResolvedValue(Role.OWNER)
+            repo.findById?.mockResolvedValue({id: 1, title: "List", description: null, creator_id: 1})
             repo.findByCreatorAndTitle?.mockResolvedValue(null)
-            repo.updateName?.mockResolvedValue(updated as any)
+            repo.update?.mockResolvedValue({id: updated.id, title: updated.title, description: updated.description, creator_id: updated.creatorId})
 
-            const result = await service.updateListTitle(1, 1, "New Title")
+            const result = await service.updateList(1, {listId: 1, title: "New Title"})
 
-            expect(repo.updateName).toHaveBeenCalledWith(1, "New Title")
-            expect(result).toBe(updated)
+            expect(repo.update).toHaveBeenCalledWith({listId: 1, title: "New Title"})
+            expect(result).toStrictEqual(updated)
         })
     })
 
@@ -213,7 +213,6 @@ describe("ListService", () => {
 
         it("throws if user is not owner", async () => {
             repo.findById?.mockResolvedValue({id: 10} as any)
-            repo.findUserRole?.mockResolvedValue(Role.EDITOR)
 
             await expect(
                 service.deleteList(1, 10)
@@ -223,8 +222,7 @@ describe("ListService", () => {
         })
 
         it("deletes list when user is owner", async () => {
-            repo.findById?.mockResolvedValue({id: 10} as any)
-            repo.findUserRole?.mockResolvedValue(Role.OWNER)
+            repo.findById?.mockResolvedValue({id: 10, title: "List", description: null, creator_id: 1})
             repo.delete?.mockResolvedValue(undefined)
 
             await service.deleteList(1, 10)
@@ -232,5 +230,4 @@ describe("ListService", () => {
             expect(repo.delete).toHaveBeenCalledWith(10)
         })
     })
-        */
 })

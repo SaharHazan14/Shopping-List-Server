@@ -12,7 +12,8 @@ export function validateCreateList(req: Request, res: Response, next: NextFuncti
         throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
     }
 
-    req.body = result.data
+    req.body.title = result.data.title
+    req.body.description = result.data.description
 
     next()
 }

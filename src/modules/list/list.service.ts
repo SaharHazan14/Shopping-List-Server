@@ -8,9 +8,7 @@ export class ListService {
     constructor(private readonly repository: ListRepository) {}
 
     async createList(dto: CreateListDTO): Promise<ListResponseDTO> {
-        // CHECK USER EXISTS
-
-        const exist = await this.repository.findByCreatorAndTitle(dto.userId, dto.title)
+        const exist =  await this.repository.existByTitleAndCreator(dto.title, dto.userId)
         if (exist) {
             throw new ConflictError("you already have a list with this title")
         }
@@ -25,8 +23,6 @@ export class ListService {
     }
     
     async getListById(listId: number, userId: number): Promise<ListResponseDTO> {
-        // CHECK USER EXISTS
-        
         const list = await this.repository.findById(listId) 
         if (!list) {
             throw new NotFoundError("list not found")
@@ -46,8 +42,6 @@ export class ListService {
     }
 
     async getUserLists(userId: number, includeMember: boolean): Promise<ListResponseDTO[]> {
-        // CHECK USER EXISTS
-
         const lists = includeMember 
             ? await this.repository.findByUser(userId) 
             : await this.repository.findByCreator(userId)
@@ -61,8 +55,6 @@ export class ListService {
     }
 
     async updateList(userId: number, dto: UpdateListDTO): Promise<ListResponseDTO> {
-        // CHECK USER EXISTS
-
         const list = await this.repository.findById(dto.listId) 
         if (!list) {
             throw new NotFoundError("list not found")
@@ -90,8 +82,6 @@ export class ListService {
     }
 
     async deleteList(userId: number, listId: number): Promise<void> {
-        // CHECK USER EXISTS
-
         const list = await this.repository.findById(listId)
         if (!list) {
             throw new NotFoundError("list not found")

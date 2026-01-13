@@ -20,6 +20,27 @@ export class ListRepository {
         })
     }
 
+    async existByTitleAndCreator(title: string, creatorId: number): Promise<boolean> {
+        const result = await prisma.list.findFirst({
+            where: {
+            title: title,
+            creator_id: creatorId
+            },
+            select: { id: true }
+        })
+
+        return result !== null
+    } 
+
+    async existById(listId: number): Promise<boolean> {
+        const result = await prisma.list.findUnique({
+        where: { id: listId },
+        select: { id: true }
+        })
+
+        return result !== null
+    }
+
     async findByCreatorAndTitle(creatorId: number, title: string): Promise<List | null> {
         return prisma.list.findFirst({
             where: {
