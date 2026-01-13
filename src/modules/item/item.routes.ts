@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { itemController } from "../modules/item/item.controller";
-import { ItemService } from "../modules/item/item.service";
+import { itemController } from "./item.controller";
+import { ItemService } from "./item.service";
 
 const router = Router()
 

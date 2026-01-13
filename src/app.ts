@@ -1,6 +1,6 @@
 import express from 'express';
 import listRoutes from './modules/list/list.routes'
-import itemRoutes from './routes/item.routes'
+import itemRoutes from './modules/item/item.routes'
 import { errorHandler } from './middlewars/error.middleware';
 
 const app = express();

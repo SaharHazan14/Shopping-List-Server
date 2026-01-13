@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { BadRequestError } from "../errors";
-import { CreateListSchema } from "../modules/list/schemas/create-list.schema";
-import { GetListByIdSchema } from "../modules/list/schemas/get-list-by-id.schema";
-import { GetUserListsSchema } from "../modules/list/schemas/get-user-lists.schema";
-import { UpdateListSchema } from "../modules/list/schemas/update-list.schema";
-import { DeleteListSchema } from "../modules/list/schemas/delete-list.schema";
+import { BadRequestError } from "../../errors";
+import { CreateListSchema } from "./schemas/create-list.schema";
+import { GetListByIdSchema } from "./schemas/get-list-by-id.schema";
+import { GetUserListsSchema } from "./schemas/get-user-lists.schema";
+import { UpdateListSchema } from "./schemas/update-list.schema";
+import { DeleteListSchema } from "./schemas/delete-list.schema";
 
 export function validateCreateList(req: Request, res: Response, next: NextFunction) {
     const result = CreateListSchema.safeParse(req.body)

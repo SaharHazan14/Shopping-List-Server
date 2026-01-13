@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { listController } from "./list.controller";
-import { validateAddListMember, validateCreateList, validateDeleteList, validateGetListById, validateGetUserLists, validateUpdateList } from "../../validators/list.validator";
+import { validateAddListMember, validateCreateList, validateDeleteList, validateGetListById, validateGetUserLists, validateUpdateList } from "./list.validator";
 
 const router = Router();
 

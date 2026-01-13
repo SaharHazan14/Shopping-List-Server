@@ -2,11 +2,11 @@ import { Request, Response } from "express";
 import { ItemService } from "./item.service";
 import { ItemRepository } from "./item.repository";
 import { Category } from "../../../generated/prisma/enums";
-import { parseEnum } from "../../validators/parse-enum" 
 
 const service = new ItemService(new ItemRepository)
 
 class ItemController {
+    /*
     async createNewItem(req: Request, res: Response) {
         // creatorId should be authenticated and extracted from middleware
         // meanwhile creatorId extracted from request body
@@ -83,6 +83,6 @@ class ItemController {
 
         res.status(204).send()
     }
+*/
 }
-
 export const itemController = new ItemController()
