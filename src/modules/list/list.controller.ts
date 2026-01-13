@@ -2,18 +2,15 @@ import { Request, Response } from "express"
 import { ListService } from "./list.service"
 import { ListRepository } from "./list.repository"
 import { CreateListDTO } from "./dto/create-list.dto"
-import { validateCreateListInput, validateGetListByIdParam, validateGetUserListsQuery, validateUpdateListInput } from "../../validators/list.validator"
-import { updateListDTO } from "./dto/update-list.dto"
+import { UpdateListDTO } from "./dto/update-list.dto"
 
 const service = new ListService(new ListRepository)
 
 class ListController {
     async createList(req: Request, res: Response) {
-        const { title, description } = validateCreateListInput(req.body)
-        
         const dto: CreateListDTO = {
-            title,
-            description,
+            title: req.body.title,
+            description: req.body.description,
             userId: req.body.userId // req.user.id 
         }
 
@@ -22,7 +19,7 @@ class ListController {
     }
 
     async getListById(req: Request, res: Response) {
-        const listId = validateGetListByIdParam(req.params)
+        const listId = Number(req.params.id)
         
         const userId = req.body.userId // req.user.id
 
@@ -31,18 +28,19 @@ class ListController {
     }
 
     async getUserLists(req: Request, res: Response) {
-        const includeMember = validateGetUserListsQuery(req.query)
+        const includeMember = req.query.includeMember
 
         const userId = req.body.userId // req.user.id
 
-        const lists = await service.getUserLists(userId, includeMember)
+        const lists = await service.getUserLists(userId, Boolean(includeMember))
         res.status(200).json(lists)
     }
 
     async updateList(req: Request, res: Response) {
-        const { listId, title, description } = validateUpdateListInput(req.params, req.body)
+        const listId = Number(req.params.id)
+        const { title, description } = req.body
 
-        const dto: updateListDTO = {
+        const dto: UpdateListDTO = {
             listId: listId, 
             title: title,
             description: description
@@ -55,12 +53,16 @@ class ListController {
     }
 
     async deleteList(req: Request, res: Response) {
-        const listId = validateGetListByIdParam(req.params)
+        const listId = Number(req.params)
 
         const userId = req.body.userId // req.user.id
 
         await service.deleteList(userId, listId)
         res.status(204).send()
+    }
+
+    async addListMember(req: Request, res: Response) {
+        
     }
 
     /*

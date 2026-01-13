@@ -1,96 +1,69 @@
+import { NextFunction, Request, Response } from "express";
 import { BadRequestError } from "../errors";
+import { CreateListSchema } from "../modules/list/schemas/create-list.schema";
+import { GetListByIdSchema } from "../modules/list/schemas/get-list-by-id.schema";
+import { GetUserListsSchema } from "../modules/list/schemas/get-user-lists.schema";
+import { UpdateListSchema } from "../modules/list/schemas/update-list.schema";
+import { DeleteListSchema } from "../modules/list/schemas/delete-list.schema";
 
-export function validateCreateListInput(body: any) {
-    if (typeof body.title !== "string") {
-        throw new BadRequestError("title is required and must be a string")
+export function validateCreateList(req: Request, res: Response, next: NextFunction) {
+    const result = CreateListSchema.safeParse(req.body)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
     }
 
-    const title = body.title.trim()
-    if (title.length < 2) {
-        throw new BadRequestError("title must be at least 2 characters long")
-    }
+    req.body = result.data
 
-    let description: string | null
-    if (body.description === undefined || body.description === null) {
-        description = null
-    } else if (typeof body.description === "string") {
-        description = body.description.trim()
-    } else {
-        throw new BadRequestError("description must be a string or null")
-    }
-
-    return { title, description }
+    next()
 }
 
-export function validateGetListByIdParam(params: any): number {
-    if (params.id === undefined) {
-        throw new BadRequestError("list ID is required")
+export function validateGetListById(req: Request, res: Response, next: NextFunction) {
+    const result = GetListByIdSchema.safeParse(req.params)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
     }
 
-    const id = Number(params.id)
-    if (Number.isNaN(id) || !Number.isInteger(id) || id <= 0) {
-        throw new BadRequestError("list ID must be a positive integer")
-    }
-
-    return id
+    next()
 }
 
-export function validateGetUserListsQuery(query: any): boolean {
-    if (query.includeMember === undefined || query.includeMember === "false") {
-        return false
+export function validateGetUserLists(req: Request, res: Response, next: NextFunction) {
+    const result = GetUserListsSchema.safeParse(req.query)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
     }
 
-    if (query.includeMember === "true") {
-        return true
-    }
+    req.query.includeMember = String(result.data.includeMember)
 
-    throw new BadRequestError("includeMember must be 'true' or 'false'")
+    next()
 }
 
-export function validateUpdateListInput(params: any, body: any) {
-    let result: {
-        listId: number,
-        title?: string,
-        description?: string | null
+export function validateUpdateList(req: Request, res: Response, next: NextFunction) {
+    const reqSchema = {
+        listId: req.params.id,
+        title: req.body.title,
+        description: req.body.description
     }
     
-    if (params.id === undefined) {
-        throw new BadRequestError("list ID is required")
+    const result = UpdateListSchema.safeParse(reqSchema)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
     }
 
-    const id = Number(params.id)
-    if (Number.isNaN(id) || !Number.isInteger(id) || id <= 0) {
-        throw new BadRequestError("list ID must be a positive integer")
+    req.body.title = result.data.title
+    req.body.description = result.data.description
+
+    next()
+}
+
+export function validateDeleteList(req: Request, res: Response, next: NextFunction) {
+    const result = DeleteListSchema.safeParse(req.params)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
     }
 
-    result = { listId: id }
+    next()
+}
 
-    if (body.title !== undefined) {
-        if (typeof body.title !== "string") {
-            throw new BadRequestError("title is required and must be a string")
-        }
-
-        const title = body.title.trim()
-        if (title.length < 2) {
-            throw new BadRequestError("title must be at least 2 characters long")
-        }
-
-        result.title = title
-    }
-
-    if (body.description !== undefined) {
-        if (body.description === null) {
-            result.description = null
-        } else if (typeof body.description === "string") {
-            result.description = body.description.trim()
-        } else {
-            throw new BadRequestError("description must be a string or null")
-        }
-    }
-
-    if (body.title === undefined && body.description === undefined) {
-        throw new BadRequestError("at least one field must be provided for update")
-    }
-
-    return result
+export function validateAddListMember(req: Request, res: Response, next: NextFunction) {
+    
 }

@@ -1,9 +1,7 @@
-import { title } from "process";
-import { User } from "../../../generated/prisma/browser";
 import { List, Role, UserList } from "../../../generated/prisma/client";
 import { prisma } from "../../../prisma/prisma";
 import { CreateListDTO } from "./dto/create-list.dto";
-import { updateListDTO } from "./dto/update-list.dto";
+import { UpdateListDTO } from "./dto/update-list.dto";
 
 export class ListRepository {
     async create(dto: CreateListDTO): Promise<List> {
@@ -70,7 +68,7 @@ export class ListRepository {
         return record?.role ?? null
     }
 
-    async update(dto: updateListDTO) {
+    async update(dto: UpdateListDTO) {
         return prisma.list.update({
             where: {id: dto.listId},
             data: { 

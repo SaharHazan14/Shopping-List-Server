@@ -20,6 +20,16 @@ export function requireString(field: unknown, fieldName: string): string {
     return field
 }
 
+export function requireNonEmptyString(field: unknown, fieldName: string): string {
+    const stringField = requireString(field, fieldName)
+
+    if (stringField.trim().length === 0) {
+        throw new BadRequestError(`${fieldName} cannot be empty`)
+    }
+
+    return stringField
+}
+
 export function requiredNumber(field: unknown, fieldName: string): number {
     requireField(field, fieldName)
 
@@ -28,16 +38,6 @@ export function requiredNumber(field: unknown, fieldName: string): number {
     }
 
     return field
-}
-
-export function requiredNonEmptyString(field: unknown, fieldName: string): string {
-    const stringField = requireString(field, fieldName)
-
-    if (stringField.trim() === "") {
-        throw new BadRequestError(`${fieldName} cannot be empty`)
-    }
-
-    return stringField
 }
 
 export function requiredPositiveInt(field: unknown, fieldName: string): number {

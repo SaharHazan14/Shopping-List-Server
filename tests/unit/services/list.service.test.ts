@@ -1,5 +1,6 @@
-/*import { Role } from "../../../generated/prisma/enums"
-import { BadRequestError, ForbiddenError, NotFoundError } from "../../../src/errors"
+import { Role } from "../../../generated/prisma/enums"
+import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../../src/errors"
+import { CreateListDTO } from "../../../src/modules/list/dto/create-list.dto"
 import { ListRepository } from "../../../src/modules/list/list.repository"
 import { ListService } from "../../../src/modules/list/list.service"
 
@@ -23,18 +24,21 @@ describe("ListService", () => {
     })
 
     describe("createList", () => {
-        it("throws if title is empty", async () => {
-            await expect(
-                service.createList(1, "")
-            ).rejects.toBeInstanceOf(BadRequestError)
-        })
-
         it("throws if creator already has a list with same title", async () => {
-            repo.findByCreatorAndTitle?.mockResolvedValue({id: 1} as any)
+            repo.findByCreatorAndTitle?.mockResolvedValue({
+                id: 1,
+                title: "Groceries",
+                description: null,
+                creator_id: 1
+            })
 
             await expect(
-                service.createList(1, "Groceries")
-            ).rejects.toThrow("You already have a list with this title")
+                service.createList({
+                    title: "Groceries",
+                    description: null,
+                    userId: 1
+                })
+            ).rejects.toBeInstanceOf(ConflictError)
         })
 
         it("creates a list when no duplicate exists", async () => {
@@ -45,20 +49,24 @@ describe("ListService", () => {
                 title: "Groceries",
                 description: null,
                 creator_id: 1,
-            }as any)
+            })
 
-            const result = await service.createList(1, "Groceries")
+            const result = await service.createList({
+                title: "Groceries",
+                description: null,
+                userId: 1
+            })
 
-            expect(repo.create).toHaveBeenCalledWith(
-                "Groceries",
-                null, 
-                1
-            )
+            expect(repo.create).toHaveBeenCalledWith({
+                title: "Groceries",
+                description: null,
+                userId: 1
+            })
 
             expect(result.title).toBe("Groceries")
         })
     })
-
+    /*
     describe("getListById", () => {
         it("throws if user is not a member in the list", async () => {
             repo.findUserRole?.mockResolvedValue(null)
@@ -224,4 +232,5 @@ describe("ListService", () => {
             expect(repo.delete).toHaveBeenCalledWith(10)
         })
     })
-})*/
+        */
+})

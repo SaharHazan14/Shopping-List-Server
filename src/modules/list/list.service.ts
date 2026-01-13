@@ -1,7 +1,7 @@
 import { ConflictError, ForbiddenError, NotFoundError } from "../../errors";
 import { CreateListDTO } from "./dto/create-list.dto";
+import { UpdateListDTO } from "./dto/update-list.dto";
 import { ListResponseDTO } from "./dto/list-response.dto";
-import { updateListDTO } from "./dto/update-list.dto";
 import { ListRepository } from "./list.repository";
 
 export class ListService {
@@ -60,7 +60,7 @@ export class ListService {
         }))
     }
 
-    async updateList(userId: number, dto: updateListDTO): Promise<ListResponseDTO> {
+    async updateList(userId: number, dto: UpdateListDTO): Promise<ListResponseDTO> {
         // CHECK USER EXISTS
 
         const list = await this.repository.findById(dto.listId) 

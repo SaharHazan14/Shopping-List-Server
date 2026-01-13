@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { ItemService } from "./item.service";
 import { ItemRepository } from "./item.repository";
 import { Category } from "../../../generated/prisma/enums";
-import { parseEnum } from "../../utils/parse-enum" 
+import { parseEnum } from "../../validators/parse-enum" 
 
 const service = new ItemService(new ItemRepository)
 
