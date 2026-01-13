@@ -1,5 +1,6 @@
-import express, { Request, Response } from 'express';
-import listRoutes from './routes/list.routes'
+import express from 'express';
+import listRoutes from './modules/list/list.routes'
+import itemRoutes from './modules/item/item.routes'
 import { errorHandler } from './middlewars/error.middleware';
 
 const app = express();
@@ -7,11 +8,8 @@ const app = express();
 app.use(express.json());
 
 app.use('/list', listRoutes)
+app.use('/item', itemRoutes)
 
 app.use(errorHandler)
-
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello, Express + TypeScript!');
-});
 
 export default app;
