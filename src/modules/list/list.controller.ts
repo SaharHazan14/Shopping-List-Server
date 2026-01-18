@@ -28,11 +28,11 @@ class ListController {
     }
 
     async getUserLists(req: Request, res: Response) {
-        const includeMember = req.query.includeMember
+        const includeMember = req.query.includeMember === "true"
 
         const userId = req.body.userId // req.user.id
 
-        const lists = await service.getUserLists(userId, Boolean(includeMember))
+        const lists = await service.getUserLists(userId, includeMember)
         res.status(200).json(lists)
     }
 

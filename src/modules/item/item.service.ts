@@ -1,93 +1,102 @@
 import { Category } from "../../../generated/prisma/enums";
-import { BadRequestError, ForbiddenError, NotFoundError } from "../../errors";
+import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../errors";
+import { CreateItemDTO } from "./dto/create-item.dto";
+import { ItemResponseDTO } from "./dto/item-response.dto";
+import { UpdateItemDTO } from "./dto/update-item.dto";
 import { ItemRepository } from "./item.repository";
 
 export class ItemService{
-    constructor(private readonly repo: ItemRepository) {}
+    constructor(private readonly repository: ItemRepository) {}
 
-    async createItem(name: string, category: Category, creatorId: number, image?: string) { 
-        // check user exists
+    async createItem(dto: CreateItemDTO): Promise<ItemResponseDTO> { 
+        const exist = await this.repository.existByNameAndCreator(dto.name, dto.userId)
 
-        if (!name || name.trim() === '') {
-            throw new BadRequestError("Item name is required")
+        if (exist) {
+            throw new ConflictError("you already have an item with this name")
         }
 
-        const exists = await this.repo.findByCreatorAndName(creatorId, name)
-
-        if (exists) {
-            throw new BadRequestError("You already have an item with this name")
+        const item = await this.repository.create(dto)
+        return {
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            imageUrl: item.image,
+            creatorId: item.creator_id
         }
-
-        return this.repo.create(name, category, image ?? null, creatorId)
     }
 
-    async getItemById(itemId: number, userId: number) {
-        // check user exists
-
-        const item = await this.repo.findById(itemId) 
-
+    async getItemById(itemId: number, userId: number): Promise<ItemResponseDTO> {
+        const item = await this.repository.findById(itemId)
         if (!item) {
-            throw new NotFoundError("Item not found")
+            throw new NotFoundError("item not found")
         }
 
         if (item.creator_id !== null && item.creator_id !== userId) {
-            throw new ForbiddenError("Access denied")
+            throw new ForbiddenError("access denied")
         }
 
-        return item
+        return {
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            imageUrl: item.image,
+            creatorId: item.creator_id
+        }
     }
 
-    async getGlobalItems(userId: number) {
-        // check user exists
+    async getUserItems(userId: number, global: boolean): Promise<ItemResponseDTO[]> {
+        let items = await this.repository.findByCreator(userId)
+        if (global) {
+            items = items.concat(await this.repository.findGlobals())
+        }
+
+        return items.map(item => ({
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            imageUrl: item.image,
+            creatorId: item.creator_id
+        }))
+    }
+
+    async updateItem(userId: number, dto: UpdateItemDTO): Promise<ItemResponseDTO> {
+        const item = await this.repository.findById(dto.itemId)
+        if (!item) {
+            throw new NotFoundError("item not found")
+        }
+
+        if (item.creator_id !== userId) {
+            throw new ForbiddenError("access denied, you are not allowed to update this item")
+        }
+
+        if (dto.name && dto.name !== item.name) {
+            const exist = await this.repository.existByNameAndCreator(dto.name, userId)
+            if (exist) {
+                throw new ConflictError("you already have an item with this name")
+            }
+        }
+
+        const updated = await this.repository.update(dto)
         
-        return this.repo.findGlobals()
+        return {
+            id: updated.id,
+            name: updated.name,
+            category: updated.category,
+            imageUrl: updated.image,
+            creatorId: updated.creator_id
+        }
     }
-    
-    async getUserItems(userId: number) {
-        // check user exists
 
-        return this.repo.findByCreator(userId)
-    }
-
-    async updateItemName(itemId: number, newName: string, userId: number) {
-        // user exists
-
-        const item = await this.repo.findById(itemId)
-
+    async deleteItem(userId: number, itemId: number) {
+        const item = await this.repository.findById(itemId)
         if (!item) {
-            throw new NotFoundError("Item not found")
+            throw new NotFoundError("item not found")
         }
 
         if (item.creator_id !== userId) {
-            throw new ForbiddenError("Access denied - you are not allowed to change this item's name")
+            throw new ForbiddenError("access denied, you are not allowed to delete this item")
         }
 
-        if (!newName || newName.trim() === '') {
-            throw new BadRequestError("Item name is required")
-        }
-
-        const exists = await this.repo.findByCreatorAndName(userId, newName)
-
-        if (exists) {
-            throw new BadRequestError("You already have an item with this name")
-        }
-
-        return this.repo.updateName(itemId, newName)
-    }
-
-    async deleteItem(itemId: number, userId: number) {
-        // user exists
-
-        const item = await this.repo.findById(itemId)
-
-        if (!item) {
-            throw new NotFoundError("Item not found")
-        }
-
-        if (item.creator_id !== userId) {
-            throw new ForbiddenError("Access denied - you are not allowed to delete this item")
-        }
-
-        await this.repo.delete(itemId)
+        await this.repository.delete(itemId)
     }
 }

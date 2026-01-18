@@ -23,8 +23,8 @@ export class ListRepository {
     async existByTitleAndCreator(title: string, creatorId: number): Promise<boolean> {
         const result = await prisma.list.findFirst({
             where: {
-            title: title,
-            creator_id: creatorId
+                title: title,
+                creator_id: creatorId
             },
             select: { id: true }
         })
