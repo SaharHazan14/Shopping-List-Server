@@ -1,9 +1,11 @@
-import { prisma } from './lib/prisma'
+import { prisma } from './prisma/prisma'
 import { ListRepository } from './src/modules/list/list.repository'
 
 const listRepository = new ListRepository()
 
-async function main() {}
+async function main() {
+    
+}
 
 main()
   .then(async () => {
