@@ -3,6 +3,8 @@ import { ListService } from "./list.service"
 import { ListRepository } from "./list.repository"
 import { CreateListDTO } from "./dto/create-list.dto"
 import { UpdateListDTO } from "./dto/update-list.dto"
+import { AddListMemberDTO } from "./dto/add-list-member.dto"
+import { UpdateListMemberDTO } from "./dto/update-list-member.dto"
 
 const service = new ListService(new ListRepository)
 
@@ -53,7 +55,7 @@ class ListController {
     }
 
     async deleteList(req: Request, res: Response) {
-        const listId = Number(req.params)
+        const listId = Number(req.params.id)
 
         const userId = req.body.userId // req.user.id
 
@@ -61,70 +63,60 @@ class ListController {
         res.status(204).send()
     }
 
+    // User - List
+
     async addListMember(req: Request, res: Response) {
+        const listId = Number(req.params.id)
+        const { memberId, memberRole } = req.body
         
-    }
+        const dto: AddListMemberDTO = {
+            listId: listId,
+            memberId: memberId,
+            memberRole: memberRole
+        }
+        
+        const userId = req.body.userId // req.user.id
 
-    /*
-    async addListMember(req: Request, res: Response) {
-        // User should be authenticated
-        const userId = req.body.userId
-
-        const listId = requiredIntParam(req.params.id, "id")
-        const memberId = requiredPositiveInt(req.body.memberId, "memberId")
-        const memberRole = parseEnum(Role, req.body.memberRole, "memberRole")
-
-        const listMember = await service.addListMember(userId, listId, memberId, memberRole)
-
+        const listMember = await service.addListMember(dto, userId)
         res.status(201).json(listMember)
     }
 
     async getListMembers(req: Request, res: Response) {
-        // User should be authenticated
-        const userId = req.body.userId
+        const listId = Number(req.params.id)
+        
+        const userId = req.body.userId // req.user.id
 
-        const listId = requiredIntParam(req.params.id, "id")
-
-        const listMembers = await service.getListMembers(userId, listId)
-
+        const listMembers = await service.getListMembers(listId, userId)
         res.status(200).json(listMembers)
     }
 
-    async getUserListMemberships(req: Request, res: Response) {
-        const userId = req.body.userId
+    async updateListMember(req: Request, res: Response) {
+        const listId = Number(req.params.listId)
+        const memberId = Number(req.params.memberId)
 
-        const userMemberships = await service.getUserListMemberships(userId)
+        const role = req.body.role
 
-        res.status(200).json(userMemberships)
-    }
+        const userId = req.body.userId // req.user.id
 
-    async updateMemberRole(req: Request, res: Response) {
-        const userId = req.body.userId
+        const dto: UpdateListMemberDTO = {
+            listId: listId,
+            memberId: memberId,
+            role: role
+        }
 
-        const listId = requiredIntParam(req.params.id, "id")
-        const memberId = requiredPositiveInt(req.body.memberId, "memberId")
-        const memberRole = parseEnum(Role, req.body.memberRole, "memberRole")
-
-        const updatedRole = await service.updateMemberRole(userId, listId, memberId, memberRole)
-        
-        res.status(200).json(updatedRole)
+        const updated = await service.updateListMember(dto, userId)
+        res.status(200).json(updated)
     }
 
     async removeListMember(req: Request, res: Response) {
-        const userId = req.body.userId
+        const listId = Number(req.params.listId)
+        const memberId = Number(req.params.memberId)
 
-        const listId = requiredIntParam(req.params.id, "id")
-        const memberId = requiredIntParam(req.params.memberId, "memberId")
+        const userId = req.body.userId // req.user.id
 
-        await service.removeMember(userId, listId, memberId)
-
+        await service.removeListMember(listId, memberId, userId)
         res.status(204).send()
     }
-
-    async leaveList(req: Request, res: Response) {
-        
-    }
-    */
 }
 
 export const listController = new ListController()

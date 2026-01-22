@@ -1,8 +1,12 @@
-import { ConflictError, ForbiddenError, NotFoundError } from "../../errors";
+import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../errors";
 import { CreateListDTO } from "./dto/create-list.dto";
 import { UpdateListDTO } from "./dto/update-list.dto";
 import { ListResponseDTO } from "./dto/list-response.dto";
 import { ListRepository } from "./list.repository";
+import { AddListMemberDTO } from "./dto/add-list-member.dto";
+import { Role } from "../../../generated/prisma/enums";
+import { ListMemberResponseDTO } from "./dto/list-member-response.dto";
+import { UpdateListMemberDTO } from "./dto/update-list-member.dto";
 
 export class ListService {
     constructor(private readonly repository: ListRepository) {}
@@ -94,105 +98,100 @@ export class ListService {
         await this.repository.delete(listId)
     }
 
-    /*
-    async addListMember(userId: number, listId: number, memberId: number, memberRole: Role) {
-        // check both users exist
+    // User - List
 
-        const list = await this.repo.findById(listId)
-
-        if (list === null) {
-            throw new NotFoundError("List not found")
+    async addListMember(dto: AddListMemberDTO, userId: number): Promise<ListMemberResponseDTO> {        
+        const exist = await this.repository.existById(dto.listId)
+        if (!exist) {
+            throw new NotFoundError("list not found")
         }
 
-        const role = await this.repo.findUserRole(userId, listId)
-        
-        if (!role || role !== Role.OWNER) {
-            throw new ForbiddenError("Access denied - only owners can add list members")
+        const userRole = await this.repository.findUserRole(userId, dto.listId)
+        if (userRole != Role.OWNER) {
+            throw new ForbiddenError("access denied, only owners allowed to add members")
         }
 
-        if (memberRole === 'OWNER') {
-            throw new BadRequestError("Member can't be owner")
+        const memberRole = await this.repository.findUserRole(dto.memberId, dto.listId)
+        if (memberRole !== null) {
+            throw new ConflictError("member already has a role")
         }
 
-        return this.repo.addMember(memberId, listId, memberRole)
+        const listMember = await this.repository.addMember(dto)
+
+        return {
+            listId: listMember.list_id,
+            memberId: listMember.user_id,
+            role: listMember.role
+        }
     }
 
-    async getListMembers(userId: number, listId: number) {
-        // check user exist
-
-        const list = await this.repo.findById(listId)
-
-        if (list === null) {
-            throw new NotFoundError("List not found")
+    async getListMembers(listId: number, userId: number): Promise<ListMemberResponseDTO[]> {
+        const exist = await this.repository.existById(listId)
+        if (!exist) {
+            throw new NotFoundError("list not found")
         }
 
-        return this.repo.findMembers(listId)
+        const userRole = await this.repository.findUserRole(userId, listId)
+        if (userRole === null) {
+            throw new ForbiddenError("access denied, only list members can get list information")
+        }
+
+        const listMembers = await this.repository.findMembers(listId)
+
+        return listMembers.map(listMember => ({
+            listId: listMember.list_id,
+            memberId: listMember.user_id,
+            role: listMember.role
+        }))
     }
 
-    async getUserListMemberships(userId: number) {
-        // check user exists
-
-        return this.repo.findUserMemberships(userId)
-    }
-
-    async updateMemberRole(userId: number, listId: number, memberId: number, memberNewRole: Role) {
-        // check both users exists
-        
-        const list = await this.repo.findById(listId)
-
-        if (list === null) {
-            throw new NotFoundError("List not found")
+    async updateListMember(dto: UpdateListMemberDTO, userId: number): Promise<ListMemberResponseDTO> {
+        const list = await this.repository.findById(dto.listId)
+        if (!list) {
+            throw new NotFoundError("list not found")
         }
 
-        const userRole = await this.repo.findUserRole(userId, listId)
-        
-        if (!userRole || userRole !== Role.OWNER) {
-            throw new ForbiddenError("Access denied - only owners can update list members role")
+        if (list.creator_id !== userId) {
+            throw new ForbiddenError("access denied, only list owner is allowed to change members' role")
         }
 
-        const memberRole = await this.repo.findUserRole(memberId, listId)
-
+        const memberRole = await this.repository.findUserRole(dto.memberId, dto.listId)
         if (!memberRole) {
-            throw new BadRequestError("User is not list member")
+            throw new NotFoundError("user is not a member in this list")
         }
 
-        if (memberRole === Role.OWNER) {
-            throw new ForbiddenError("Can't change owner role")
-        }
-
-        if (memberNewRole === Role.OWNER) {
-            throw new BadRequestError("Member can't be owner")
-        }
-
-        if (memberRole === memberNewRole) {
+        if (memberRole === dto.role) {
             throw new BadRequestError("nothing to update")
         }
 
-        return this.repo.updateMemberRole(memberId, listId, memberNewRole)
+        const listMember = await this.repository.updateListMember(dto)
+
+        return {
+            listId: listMember.list_id,
+            memberId: listMember.user_id,
+            role: listMember.role
+        }
     }
 
-    async removeMember(userId: number, listId: number, memberId: number) {
-        // check both users exist
-
-        const list = await this.repo.findById(listId)
-
-        if (list === null) {
-            throw new NotFoundError("List not found")
+    async removeListMember(listId: number, memberId: number, userId: number): Promise<void> {
+        const list = await this.repository.findById(listId)
+        if (!list) {
+            throw new NotFoundError("list not found")
         }
 
-        const userRole = await this.repo.findUserRole(userId, listId)
-        
-        if (!userRole || userRole !== Role.OWNER) {
-            throw new ForbiddenError("Access denied - only owners can remove list members role")
-        }
-
-        const memberRole = await this.repo.findUserRole(memberId, listId)
-
+        const memberRole = await this.repository.findUserRole(memberId, listId)
         if (!memberRole) {
-            throw new NotFoundError("Member not found")
+            throw new NotFoundError("user is not a member in this list")
         }
 
-        await this.repo.removeMember(memberId, listId)
+        if (list.creator_id !== userId) {
+            throw new ForbiddenError("access denied, only list owner is allowed to remove member")
+        }
+
+        if (memberRole === Role.OWNER) {
+            throw new ForbiddenError("access denied, you can't remove list owner")
+        }
+
+        await this.repository.removeMember(memberId, listId)
     }
-        */
 }

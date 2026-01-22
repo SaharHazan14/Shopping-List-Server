@@ -15,7 +15,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
   }
 
   if (err instanceof ConflictError) {
-    return res.status(409).json({ message: err.message})
+    return res.status(409).json({ message: err.message })
   }
 
   return res.status(500).json({ message: "Internal server error" })

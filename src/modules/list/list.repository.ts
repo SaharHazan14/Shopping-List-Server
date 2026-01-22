@@ -1,6 +1,8 @@
 import { List, Role, UserList } from "../../../generated/prisma/client";
 import { prisma } from "../../../prisma/prisma";
+import { AddListMemberDTO } from "./dto/add-list-member.dto";
 import { CreateListDTO } from "./dto/create-list.dto";
+import { UpdateListMemberDTO } from "./dto/update-list-member.dto";
 import { UpdateListDTO } from "./dto/update-list.dto";
 
 export class ListRepository {
@@ -112,12 +114,14 @@ export class ListRepository {
         })
     }
 
-    async addMember(userId: number, listId: number, role: Role): Promise<UserList> {
+    // User - List
+
+    async addMember(dto: AddListMemberDTO): Promise<UserList> {
         return prisma.userList.create({
             data: {
-                user_id: userId,
-                list_id: listId,
-                role: role
+                user_id: dto.memberId,
+                list_id: dto.listId,
+                role: dto.memberRole
             }
         })
     }
@@ -128,24 +132,16 @@ export class ListRepository {
         })
     }
 
-    async findUserMemberships(userId: number): Promise<UserList[]> {
-        return prisma.userList.findMany({
-            where: {
-                user_id: userId
-            }
-        })
-    }
-
-    async updateMemberRole(userId: number, listId: number, newRole: Role) {
+    async updateListMember(dto: UpdateListMemberDTO): Promise<UserList> {
         return prisma.userList.update({
             where: {
                 user_id_list_id: {
-                    user_id: userId,
-                    list_id: listId,
+                    user_id: dto.memberId,
+                    list_id: dto.listId,
                 },
             },
             data: {
-                role: newRole
+                role: dto.role
             }
         })
     }
