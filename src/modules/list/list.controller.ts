@@ -117,6 +117,12 @@ class ListController {
         await service.removeListMember(listId, memberId, userId)
         res.status(204).send()
     }
+
+    // List - Item
+
+    async addListItem(req: Request, res: Response) {
+
+    }
 }
 
 export const listController = new ListController()
