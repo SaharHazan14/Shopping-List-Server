@@ -1,5 +1,6 @@
-import { List, Role, UserList } from "../../../generated/prisma/client";
+import { List, ListItem, Role, UserList } from "../../../generated/prisma/client";
 import { prisma } from "../../../prisma/prisma";
+import { AddListItemDTO } from "./dto/add-list-item.dto";
 import { AddListMemberDTO } from "./dto/add-list-member.dto";
 import { CreateListDTO } from "./dto/create-list.dto";
 import { UpdateListMemberDTO } from "./dto/update-list-member.dto";
@@ -111,49 +112,6 @@ export class ListRepository {
     async delete(listId: number): Promise<void> {
         await prisma.list.delete({
             where: {id: listId},
-        })
-    }
-
-    // User - List
-
-    async addMember(dto: AddListMemberDTO): Promise<UserList> {
-        return prisma.userList.create({
-            data: {
-                user_id: dto.memberId,
-                list_id: dto.listId,
-                role: dto.memberRole
-            }
-        })
-    }
-
-    async findMembers(listId: number): Promise<UserList[]> {
-        return prisma.userList.findMany({
-            where: {list_id: listId}
-        })
-    }
-
-    async updateListMember(dto: UpdateListMemberDTO): Promise<UserList> {
-        return prisma.userList.update({
-            where: {
-                user_id_list_id: {
-                    user_id: dto.memberId,
-                    list_id: dto.listId,
-                },
-            },
-            data: {
-                role: dto.role
-            }
-        })
-    }
-
-    async removeMember(userId: number, listId: number) {
-        await prisma.userList.delete({
-            where: {
-                user_id_list_id: {
-                    user_id: userId,
-                    list_id: listId
-                }
-            }
         })
     }
 }

@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { listController } from "./list.controller";
-import { validateAddListMember, validateCreateList, validateDeleteList, 
-         validateGetListById, validateGetListMembers, validateGetUserLists, 
+import { validateAddListItem, validateAddListMember, validateCreateList, validateDeleteList, 
+         validateGetListById, validateGetListItems, validateGetListMembers, validateGetUserLists, 
+         validateRemoveListItem, 
          validateRemoveListMember, 
-         validateUpdateList, validateUpdateListMember } from "./list.validator";
+         validateUpdateList, validateUpdateListItem, validateUpdateListMember } from "./list.validator";
 
 const router = Router();
 
@@ -17,5 +18,10 @@ router.post('/:id/member', validateAddListMember, listController.addListMember)
 router.get('/:id/member', validateGetListMembers, listController.getListMembers)
 router.patch('/:listId/member/:memberId', validateUpdateListMember, listController.updateListMember)
 router.delete('/:listId/member/:memberId', validateRemoveListMember, listController.removeListMember)
+
+router.post('/:id/item', validateAddListItem, listController.addListItem)
+router.get('/:id/item', validateGetListItems ,listController.getListItems)
+router.patch('/:listId/item/:itemId', validateUpdateListItem, listController.updateListItem)
+router.delete('/:listId/item/:itemId', validateRemoveListItem, listController.removeListItem)
 
 export default router

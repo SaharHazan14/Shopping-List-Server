@@ -6,9 +6,13 @@ import { GetUserListsSchema } from "./schemas/get-user-lists.schema";
 import { UpdateListSchema } from "./schemas/update-list.schema";
 import { DeleteListSchema } from "./schemas/delete-list.schema";
 import { AddListMemberSchema } from "./schemas/add-list-member.schema";
-import { GetListMembersSchema } from "./schemas/get-list-members-schema";
+import { GetListMembersSchema } from "./schemas/get-list-members.schema";
 import { UpdateListMemberSchema } from "./schemas/update-list-member-schema";
 import { RemoveListMemberSchema } from "./schemas/remove-list-member.schema";
+import { AddListItemSchema } from "./schemas/add-list-item.schema";
+import { GetListItemsSchema } from "./schemas/get-list-items.schema";
+import { UpdateListItemSchema } from "./schemas/update-list-item.schema";
+import { RemoveListItemSchema } from "./schemas/remove-list-item.schema";
 
 export function validateCreateList(req: Request, res: Response, next: NextFunction) {
     const result = CreateListSchema.safeParse(req.body)
@@ -121,6 +125,60 @@ export function validateRemoveListMember(req: Request, res: Response, next: Next
     }
 
     const result = RemoveListMemberSchema.safeParse(reqSchema)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
+    }
+
+    next()
+}
+
+// List - Item
+
+export function validateAddListItem(req: Request, res: Response, next: NextFunction) {
+    const reqSchema = {
+        listId: req.params.id,
+        itemId: req.body.itemId,
+        quantity: req.body.quantity,
+        isChecked: req.body.isChecked
+    }
+
+    const result = AddListItemSchema.safeParse(reqSchema)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
+    }
+
+    req.body.isChecked = result.data.isChecked
+
+    next()
+}
+
+export function validateGetListItems(req: Request, res: Response, next: NextFunction) {
+    const result = GetListItemsSchema.safeParse(req.params)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
+    }
+
+    next()
+}
+
+export function validateUpdateListItem(req: Request, res: Response, next: NextFunction) {
+    const reqSchema = {
+        listId: req.params.listId,
+        itemId: req.params.itemId,
+        quantity: req.body.quantity,
+        isChecked: req.body.isChecked
+    }
+
+    const result = UpdateListItemSchema.safeParse(reqSchema)
+    if (!result.success) {
+        throw new BadRequestError(result.error.issues.map(i => i.path + " " + i.message).join(", "))
+    }
+
+    next()
+}
+
+export function validateRemoveListItem(req: Request, res: Response, next: NextFunction) {
+    const result = RemoveListItemSchema.safeParse(req.params)
     if (!result.success) {
         throw new BadRequestError(result.error.issues.map(i => i.message).join(", "))
     }
