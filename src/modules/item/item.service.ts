@@ -1,12 +1,20 @@
-import { Category } from "../../../generated/prisma/enums";
-import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../errors";
-import { CreateItemDTO } from "./dto/create-item.dto";
-import { ItemResponseDTO } from "./dto/item-response.dto";
-import { UpdateItemDTO } from "./dto/update-item.dto";
+import { Item } from "../../../generated/prisma/client";
+import { ConflictError, ForbiddenError, NotFoundError } from "../../errors";
+import { CreateItemDTO, UpdateItemDTO, ItemResponseDTO } from "./item.dto";
 import { ItemRepository } from "./item.repository";
 
 export class ItemService{
     constructor(private readonly repository: ItemRepository) {}
+
+    private toItemResponseDTO(item: Item): ItemResponseDTO {
+        return {
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            imageUrl: item.image,
+            creatorId: item.creator_id
+        }
+    }
 
     async createItem(dto: CreateItemDTO): Promise<ItemResponseDTO> { 
         const exist = await this.repository.existByNameAndCreator(dto.name, dto.userId)
@@ -16,13 +24,8 @@ export class ItemService{
         }
 
         const item = await this.repository.create(dto)
-        return {
-            id: item.id,
-            name: item.name,
-            category: item.category,
-            imageUrl: item.image,
-            creatorId: item.creator_id
-        }
+        
+        return this.toItemResponseDTO(item)
     }
 
     async getItemById(itemId: number, userId: number): Promise<ItemResponseDTO> {
@@ -35,13 +38,7 @@ export class ItemService{
             throw new ForbiddenError("access denied")
         }
 
-        return {
-            id: item.id,
-            name: item.name,
-            category: item.category,
-            imageUrl: item.image,
-            creatorId: item.creator_id
-        }
+        return this.toItemResponseDTO(item)
     }
 
     async getUserItems(userId: number, global: boolean): Promise<ItemResponseDTO[]> {
@@ -50,13 +47,7 @@ export class ItemService{
             items = items.concat(await this.repository.findGlobals())
         }
 
-        return items.map(item => ({
-            id: item.id,
-            name: item.name,
-            category: item.category,
-            imageUrl: item.image,
-            creatorId: item.creator_id
-        }))
+        return items.map(item => this.toItemResponseDTO(item))
     }
 
     async updateItem(userId: number, dto: UpdateItemDTO): Promise<ItemResponseDTO> {
@@ -78,13 +69,7 @@ export class ItemService{
 
         const updated = await this.repository.update(dto)
         
-        return {
-            id: updated.id,
-            name: updated.name,
-            category: updated.category,
-            imageUrl: updated.image,
-            creatorId: updated.creator_id
-        }
+        return this.toItemResponseDTO(updated)
     }
 
     async deleteItem(userId: number, itemId: number) {

@@ -1,7 +1,6 @@
 import { Category, Item } from "../../../generated/prisma/client";
 import { prisma } from "../../../prisma/prisma";
-import { CreateItemDTO } from "./dto/create-item.dto";
-import { UpdateItemDTO } from "./dto/update-item.dto";
+import { CreateItemDTO, UpdateItemDTO } from "./item.dto";
 
 export class ItemRepository {
     async create(dto : CreateItemDTO): Promise<Item> {

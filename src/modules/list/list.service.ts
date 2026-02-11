@@ -1,19 +1,25 @@
-import { ConflictError, ForbiddenError, NotFoundError } from "../../errors";
-import { CreateListDTO } from "./dto/create-list.dto";
-import { UpdateListDTO } from "./dto/update-list.dto";
-import { ListResponseDTO } from "./dto/list-response.dto";
+import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../errors";
+import { CreateListDTO, UpdateListDTO, ListResponseDTO } from "./list.dto";
 import { ListRepository } from "./list.repository";
+import { AddListMemberDTO, UpdateListMemberDTO, ListMemberResponseDTO } from "./user-list/user-list.dto";
+import { Role } from "../../../generated/prisma/enums";
+import { AddListItemDTO, UpdateListItemDTO, ListItemResponseDTO } from "./list-item/list-item.dto";
+import { ItemRepository } from "../item/item.repository";
+import { ListItemRepository } from "./list-item/list-Item.repository";
+import { UserListRepository } from "./user-list/user-list.repository";
+import { List, ListItem, UserList } from "../../../generated/prisma/client";
 
 export class ListService {
-    constructor(private readonly repository: ListRepository) {}
+    constructor(
+        private readonly listRepository: ListRepository,
+        private readonly itemRepository: ItemRepository,
+        private readonly userListRepository: UserListRepository,
+        private readonly listItemRepository: ListItemRepository
+    ) {}
 
-    async createList(dto: CreateListDTO): Promise<ListResponseDTO> {
-        const exist =  await this.repository.existByTitleAndCreator(dto.title, dto.userId)
-        if (exist) {
-            throw new ConflictError("you already have a list with this title")
-        }
+    // Mappers
 
-        const list = await this.repository.create(dto)
+    private toListResponseDTO(list: List): ListResponseDTO {
         return {
             id: list.id,
             title: list.title,
@@ -21,178 +27,226 @@ export class ListService {
             creatorId: list.creator_id
         }
     }
+
+    private toListMemberResponseDTO(listMember: UserList): ListMemberResponseDTO {
+        return {
+            listId: listMember.list_id,
+            memberId: listMember.user_id,
+            role: listMember.role
+        }
+    }
+
+    private toListItemResponseDTO(listItem: ListItem): ListItemResponseDTO {
+        return { 
+            listId: listItem.list_id,
+            itemId: listItem.item_id,
+            quantity: listItem.quantity,
+            isChecked: listItem.is_checked
+        }
+    }
+
+    // Help functions
+
+    private async assertUniqueTitleForCreator(title: string, creatorId: number): Promise<void> {
+        const exists =  await this.listRepository.existByTitleAndCreator(title, creatorId)
+        if (exists) {
+            throw new ConflictError("A list with this title already exists")
+        }
+    }
+
+    private async getExistingListOrThrow(listId: number): Promise<List> {
+        const list = await this.listRepository.findById(listId) 
+        if (!list) {
+            throw new NotFoundError("List not found")
+        }
+
+        return list
+    }
+
+    private async assertListExists(listId: number): Promise<void> {
+        const exists = await this.listRepository.existById(listId)
+        if (!exists) {
+            throw new NotFoundError("List not found")
+        }
+    }
+
+    private async assertUserRole(userId: number, listId: number, role: Role[]): Promise<void> {
+        const userRole = await this.userListRepository.findUserRole(userId, listId)
+        if (userRole === null || !role.includes(userRole)) {
+            throw new ForbiddenError("Access denied")
+        }
+    }
+
+    private async assertMemberExists(memberId: number, listId: number): Promise<void> {
+        const userRole = await this.userListRepository.findUserRole(memberId, listId)
+        if (userRole === null) {
+            throw new NotFoundError("Member not found")
+        }
+    }
+
+    private async assertMemberNotExists(memberId: number, listId: number): Promise<void> {
+        const userRole = await this.userListRepository.findUserRole(memberId, listId)
+        if (userRole !== null) {
+            throw new ConflictError("Member already has a role")
+        }
+    }
+
+    private async assertItemExistsInList(itemId: number, listId: number): Promise<void> {
+        const exists = await this.listItemRepository.findByListIdAndItemId(listId, itemId)
+        if (exists === null) {
+            throw new NotFoundError("Item not found in this list")
+        }
+    }
+
+    private async assertItemNotExistsInList(itemId: number, listId: number): Promise<void> {
+        const exists = await this.listItemRepository.findByListIdAndItemId(listId, itemId)
+        if (exists !== null) {
+            throw new ConflictError("Item already exists in this list")
+        }
+    }
+
+    // Services 
+
+    async createList(dto: CreateListDTO): Promise<ListResponseDTO> {
+        await this.assertUniqueTitleForCreator(dto.title, dto.creatorId)
+
+        const list = await this.listRepository.create(dto)
+        
+        return this.toListResponseDTO(list)
+    }
     
     async getListById(listId: number, userId: number): Promise<ListResponseDTO> {
-        const list = await this.repository.findById(listId) 
-        if (!list) {
-            throw new NotFoundError("list not found")
-        }
+        const list = await this.getExistingListOrThrow(listId)
 
-        const userRole = await this.repository.findUserRole(userId, listId)
-        if (userRole === null) {
-            throw new ForbiddenError("access denied")
-        }
+        await this.assertUserRole(userId, listId, Object.values(Role))
 
-        return {
-            id: list.id,
-            title: list.title,
-            description: list.description,
-            creatorId: list.creator_id
-        }
+        return this.toListResponseDTO(list)
     }
 
     async getUserLists(userId: number, includeMember: boolean): Promise<ListResponseDTO[]> {
         const lists = includeMember 
-            ? await this.repository.findByUser(userId) 
-            : await this.repository.findByCreator(userId)
+            ? await this.listRepository.findByUser(userId) 
+            : await this.listRepository.findByCreator(userId)
 
-        return lists.map(list => ({
-            id: list.id,
-            title: list.title,
-            description: list.description,
-            creatorId: list.creator_id
-        }))
+        return lists.map(list => this.toListResponseDTO(list))
     }
 
     async updateList(userId: number, dto: UpdateListDTO): Promise<ListResponseDTO> {
-        const list = await this.repository.findById(dto.listId) 
-        if (!list) {
-            throw new NotFoundError("list not found")
-        }
+        const list = await this.getExistingListOrThrow(dto.id)
 
-        if (list.creator_id !== userId) {
-            throw new ForbiddenError("access denied, you are not allowed to update this list")
-        }
-
+        await this.assertUserRole(userId, dto.id, [Role.OWNER])
+        
         if (dto.title && dto.title !== list.title) {
-            const exist = await this.repository.findByCreatorAndTitle(userId, dto.title)
-            if (exist) {
-                throw new ConflictError("you already have a list with this title")
-            }
+            await this.assertUniqueTitleForCreator(dto.title, userId)
         }
 
-        const updated = await this.repository.update(dto)
+        const updated = await this.listRepository.update(dto)
 
-        return {
-            id: updated.id,
-            title: updated.title,
-            description: updated.description,
-            creatorId: updated.creator_id
-        }
+        return this.toListResponseDTO(updated)
     }
 
     async deleteList(userId: number, listId: number): Promise<void> {
-        const list = await this.repository.findById(listId)
-        if (!list) {
-            throw new NotFoundError("list not found")
-        }
-
-        if (list.creator_id !== userId) {
-            throw new ForbiddenError("access denied, you are not allowed to delete this list")
-        }
-
-        await this.repository.delete(listId)
-    }
-
-    /*
-    async addListMember(userId: number, listId: number, memberId: number, memberRole: Role) {
-        // check both users exist
-
-        const list = await this.repo.findById(listId)
-
-        if (list === null) {
-            throw new NotFoundError("List not found")
-        }
-
-        const role = await this.repo.findUserRole(userId, listId)
+        await this.assertListExists(listId)
         
-        if (!role || role !== Role.OWNER) {
-            throw new ForbiddenError("Access denied - only owners can add list members")
-        }
+        await this.assertUserRole(userId, listId, [Role.OWNER])
 
-        if (memberRole === 'OWNER') {
-            throw new BadRequestError("Member can't be owner")
-        }
-
-        return this.repo.addMember(memberId, listId, memberRole)
+        await this.listRepository.delete(listId)
     }
 
-    async getListMembers(userId: number, listId: number) {
-        // check user exist
+    async addListMember(dto: AddListMemberDTO, userId: number): Promise<ListMemberResponseDTO> {        
+        await this.assertListExists(dto.listId)
 
-        const list = await this.repo.findById(listId)
+        await this.assertUserRole(userId, dto.listId, [Role.OWNER])
 
-        if (list === null) {
-            throw new NotFoundError("List not found")
-        }
+        await this.assertMemberNotExists(dto.memberId, dto.listId)
 
-        return this.repo.findMembers(listId)
+        const listMember = await this.userListRepository.create(dto)
+
+        return this.toListMemberResponseDTO(listMember)
     }
 
-    async getUserListMemberships(userId: number) {
-        // check user exists
+    async getListMembers(listId: number, userId: number): Promise<ListMemberResponseDTO[]> {
+        await this.assertListExists(listId)
 
-        return this.repo.findUserMemberships(userId)
+        await this.assertUserRole(userId, listId, Object.values(Role))
+
+        const listMembers = await this.userListRepository.findByListId(listId)
+
+        return listMembers.map(listMember => this.toListMemberResponseDTO(listMember))
     }
 
-    async updateMemberRole(userId: number, listId: number, memberId: number, memberNewRole: Role) {
-        // check both users exists
-        
-        const list = await this.repo.findById(listId)
+    async updateListMember(dto: UpdateListMemberDTO, userId: number): Promise<ListMemberResponseDTO> {
+        await this.assertListExists(dto.listId)
 
-        if (list === null) {
-            throw new NotFoundError("List not found")
-        }
+        await this.assertUserRole(userId, dto.listId, [Role.OWNER])
 
-        const userRole = await this.repo.findUserRole(userId, listId)
-        
-        if (!userRole || userRole !== Role.OWNER) {
-            throw new ForbiddenError("Access denied - only owners can update list members role")
-        }
+        await this.assertMemberExists(dto.memberId, dto.listId)
 
-        const memberRole = await this.repo.findUserRole(memberId, listId)
+        const listMember = await this.userListRepository.update(dto)
 
-        if (!memberRole) {
-            throw new BadRequestError("User is not list member")
-        }
-
-        if (memberRole === Role.OWNER) {
-            throw new ForbiddenError("Can't change owner role")
-        }
-
-        if (memberNewRole === Role.OWNER) {
-            throw new BadRequestError("Member can't be owner")
-        }
-
-        if (memberRole === memberNewRole) {
-            throw new BadRequestError("nothing to update")
-        }
-
-        return this.repo.updateMemberRole(memberId, listId, memberNewRole)
+        return this.toListMemberResponseDTO(listMember)
     }
 
-    async removeMember(userId: number, listId: number, memberId: number) {
-        // check both users exist
+    async removeListMember(listId: number, memberId: number, userId: number): Promise<void> {
+        await this.assertListExists(listId)
 
-        const list = await this.repo.findById(listId)
+        await this.assertUserRole(userId, listId, [Role.OWNER])
 
-        if (list === null) {
-            throw new NotFoundError("List not found")
-        }
+        await this.assertMemberExists(memberId, listId)
 
-        const userRole = await this.repo.findUserRole(userId, listId)
-        
-        if (!userRole || userRole !== Role.OWNER) {
-            throw new ForbiddenError("Access denied - only owners can remove list members role")
-        }
-
-        const memberRole = await this.repo.findUserRole(memberId, listId)
-
-        if (!memberRole) {
-            throw new NotFoundError("Member not found")
-        }
-
-        await this.repo.removeMember(memberId, listId)
+        await this.userListRepository.delete(memberId, listId)
     }
-        */
+
+    async addListItem(dto: AddListItemDTO, userId: number): Promise<ListItemResponseDTO> {
+        await this.assertListExists(dto.listId)
+
+        await this.assertUserRole(userId, dto.listId, [Role.OWNER, Role.EDITOR])
+
+        const item = await this.itemRepository.findById(dto.itemId)
+        if (!item) {
+            throw new NotFoundError("item not found")
+        }
+
+        if (item.creator_id !== null && item.creator_id !== userId) {
+            throw new ForbiddenError("access denied")
+        }
+
+        await this.assertItemNotExistsInList(dto.itemId, dto.listId)
+
+        const listItem = await this.listItemRepository.craete(dto)
+
+        return this.toListItemResponseDTO(listItem)
+    }
+
+    async getListItems(listId: number, userId: number): Promise<ListItemResponseDTO[]> {
+        await this.assertListExists(listId)
+
+        await this.assertUserRole(userId, listId, Object.values(Role))
+
+        const listItems = await this.listItemRepository.findByListId(listId)
+
+        return listItems.map(listItem => this.toListItemResponseDTO(listItem))
+    }
+
+    async updateListItem(dto: UpdateListItemDTO, userId: number): Promise<ListItemResponseDTO> {
+        await this.assertListExists(dto.listId)
+
+        await this.assertUserRole(userId, dto.listId, [Role.OWNER, Role.EDITOR])
+
+        await this.assertItemExistsInList(dto.itemId, dto.listId)
+
+        const updated = await this.listItemRepository.update(dto)
+
+        return this.toListItemResponseDTO(updated)
+    }
+
+    async removeListItem(listId: number, itemId: number, userId: number): Promise<void> {
+        await this.assertListExists(listId)
+
+        await this.assertUserRole(userId, listId, [Role.OWNER, Role.EDITOR])
+
+        await this.assertItemExistsInList(itemId, listId)
+
+        await this.listItemRepository.delete(listId, itemId)
+    }
 }

@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { ItemService } from "./item.service";
 import { ItemRepository } from "./item.repository";
-import { CreateItemDTO } from "./dto/create-item.dto";
-import { UpdateItemDTO } from "./dto/update-item.dto";
+import { CreateItemDTO, UpdateItemDTO } from "./item.dto";
 
 const service = new ItemService(new ItemRepository)
 
@@ -12,7 +11,7 @@ class ItemController {
             name: req.body.name,
             category: req.body.category,
             imageUrl: req.body.url,
-            userId: req.body.userId // req.user.id
+            userId: 1 // req.user.id
         }
 
         const item = await service.createItem(dto)
@@ -22,7 +21,7 @@ class ItemController {
     async getItemById(req: Request, res: Response) {
         const itemId = Number(req.params.id)
 
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         const item = await service.getItemById(itemId, userId)
         res.status(200).json(item)
@@ -30,7 +29,7 @@ class ItemController {
 
     async getUserItems(req: Request, res: Response) {
         const global = req.query.global === "true"
-        const userId = req.body.userId // req.user.id 
+        const userId = 1 // req.user.id 
 
         const items = await service.getUserItems(userId, global)
         res.status(200).json(items)
@@ -44,7 +43,7 @@ class ItemController {
             imageUrl: req.body.imageUrl
         }
 
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
         
         const updated = await service.updateItem(userId, dto)
         res.status(200).json(updated)
@@ -52,7 +51,7 @@ class ItemController {
     
     async deleteItem(req: Request, res: Response) {
         const itemId = Number(req.params.id)
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         await service.deleteItem(userId, itemId)
         res.status(204).send()
