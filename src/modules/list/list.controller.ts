@@ -1,15 +1,12 @@
 import { Request, Response } from "express"
 import { ListService } from "./list.service"
 import { ListRepository } from "./list.repository"
-import { CreateListDTO } from "./dto/create-list.dto"
-import { UpdateListDTO } from "./dto/update-list.dto"
-import { AddListMemberDTO } from "./dto/add-list-member.dto"
-import { UpdateListMemberDTO } from "./dto/update-list-member.dto"
+import { CreateListDTO, UpdateListDTO } from "./list.dto"
+import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list/user-list.dto"
 import { ItemRepository } from "../item/item.repository"
-import { UserListRepository } from "./user-list.repository"
-import { ListItemRepository } from "./list-Item.repository"
-import { AddListItemDTO } from "./dto/add-list-item.dto"
-import { UpdateListItemDTO } from "./dto/update-list-item.dto"
+import { UserListRepository } from "./user-list/user-list.repository"
+import { ListItemRepository } from "./list-item/list-Item.repository"
+import { AddListItemDTO, UpdateListItemDTO } from "./list-item/list-item.dto"
 
 const service = new ListService(new ListRepository, new ItemRepository, new UserListRepository, new ListItemRepository)
 
@@ -18,17 +15,16 @@ class ListController {
         const dto: CreateListDTO = {
             title: req.body.title,
             description: req.body.description,
-            userId: req.body.userId // req.user.id 
+            creatorId: 1 // req.user.id 
         }
-
         const list = await service.createList(dto)
         res.status(201).json(list)
     }
 
     async getListById(req: Request, res: Response) {
-        const listId = Number(req.params.id)
+        const listId = Number(req.params.listId)
         
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         const list = await service.getListById(listId, userId)
         res.status(200).json(list)
@@ -37,77 +33,64 @@ class ListController {
     async getUserLists(req: Request, res: Response) {
         const includeMember = req.query.includeMember === "true"
 
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         const lists = await service.getUserLists(userId, includeMember)
         res.status(200).json(lists)
     }
 
     async updateList(req: Request, res: Response) {
-        const listId = Number(req.params.id)
-        const { title, description } = req.body
-
         const dto: UpdateListDTO = {
-            listId: listId, 
-            title: title,
-            description: description
+            id: Number(req.params.listId), 
+            title: req.body.title,
+            description: req.body.description
         }
 
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         const updated = await service.updateList(userId, dto)
         res.status(200).json(updated)
     }
 
     async deleteList(req: Request, res: Response) {
-        const listId = Number(req.params.id)
+        const listId = Number(req.params.listId)
 
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         await service.deleteList(userId, listId)
         res.status(204).send()
     }
 
-    // User - List
-
     async addListMember(req: Request, res: Response) {
-        const listId = Number(req.params.id)
-        const { memberId, memberRole } = req.body
-        
         const dto: AddListMemberDTO = {
-            listId: listId,
-            memberId: memberId,
-            memberRole: memberRole
+            listId: Number(req.params.listId),
+            memberId: req.body.memberId,
+            role: req.body.role
         }
-        
-        const userId = req.body.userId // req.user.id
+
+        const userId = 1 // req.user.id
 
         const listMember = await service.addListMember(dto, userId)
         res.status(201).json(listMember)
     }
 
     async getListMembers(req: Request, res: Response) {
-        const listId = Number(req.params.id)
+        const listId = Number(req.params.listId)
         
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         const listMembers = await service.getListMembers(listId, userId)
         res.status(200).json(listMembers)
     }
 
     async updateListMember(req: Request, res: Response) {
-        const listId = Number(req.params.listId)
-        const memberId = Number(req.params.memberId)
-
-        const role = req.body.role
-
-        const userId = req.body.userId // req.user.id
-
         const dto: UpdateListMemberDTO = {
-            listId: listId,
-            memberId: memberId,
-            role: role
+            listId: Number(req.params.listId),
+            memberId: Number(req.params.memberId),
+            role: req.body.role
         }
+
+        const userId = 1 // req.user.id
 
         const updated = await service.updateListMember(dto, userId)
         res.status(200).json(updated)
@@ -117,54 +100,44 @@ class ListController {
         const listId = Number(req.params.listId)
         const memberId = Number(req.params.memberId)
 
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         await service.removeListMember(listId, memberId, userId)
         res.status(204).send()
     }
 
-    // List - Item
-
     async addListItem(req: Request, res: Response) {
-        const listId = Number(req.params.id)
-        const { itemId, quantity, isChecked } = req.body
-
         const dto: AddListItemDTO = {
-            listId: listId,
-            itemId: itemId,
-            quantity: quantity,
-            isChecked: isChecked
+            listId: Number(req.params.listId),
+            itemId: req.body.itemId,
+            quantity: req.body.quantity,
+            isChecked: req.body.isChecked
         }
 
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         const listItem = await service.addListItem(dto, userId)
         res.status(201).json(listItem) 
     }
 
     async getListItems(req: Request, res: Response) {
-        const listId = Number(req.params.id)
+        const listId = Number(req.params.listId)
         
-        const userId = req.body.userId // req.user.id
+        const userId = 1 // req.user.id
 
         const listItems = await service.getListItems(listId, userId) 
         res.status(200).json(listItems)
     }
 
-    async updateListItem(req: Request, res: Response) {
-        const listId = Number(req.params.listId)
-        const itemId = Number(req.params.itemId)
-
-        const { quantity, isChecked } = req.body
-
-        const userId = req.body.userId // req.user.id
-        
+    async updateListItem(req: Request, res: Response) {  
         const dto: UpdateListItemDTO = {
-            listId: listId,
-            itemId: itemId,
-            quantity: quantity,
-            isChecked: isChecked
+            listId: Number(req.params.listId),
+            itemId: Number(req.params.itemId),
+            quantity: req.body.quantity,
+            isChecked: req.body.isChecked
         }
+
+        const userId = 1 // req.user.id
 
         const updated = await service.updateListItem(dto, userId)
         res.status(200).json(updated)

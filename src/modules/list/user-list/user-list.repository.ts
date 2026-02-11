@@ -1,7 +1,6 @@
-import { Role, UserList } from "../../../generated/prisma/client";
-import { prisma } from "../../../prisma/prisma";
-import { AddListMemberDTO } from "./dto/add-list-member.dto";
-import { UpdateListMemberDTO } from "./dto/update-list-member.dto";
+import { Role, UserList } from "../../../../generated/prisma/client";
+import { prisma } from "../../../../prisma/prisma";
+import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list.dto"
 
 export class UserListRepository {
     async create(dto: AddListMemberDTO): Promise<UserList> {
@@ -9,7 +8,7 @@ export class UserListRepository {
             data: {
                 user_id: dto.memberId,
                 list_id: dto.listId,
-                role: dto.memberRole
+                role: dto.role
             }
         })
     }

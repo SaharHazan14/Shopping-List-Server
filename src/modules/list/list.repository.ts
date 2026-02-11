@@ -1,10 +1,6 @@
-import { List, ListItem, Role, UserList } from "../../../generated/prisma/client";
+import { List, Role } from "../../../generated/prisma/client";
 import { prisma } from "../../../prisma/prisma";
-import { AddListItemDTO } from "./dto/add-list-item.dto";
-import { AddListMemberDTO } from "./dto/add-list-member.dto";
-import { CreateListDTO } from "./dto/create-list.dto";
-import { UpdateListMemberDTO } from "./dto/update-list-member.dto";
-import { UpdateListDTO } from "./dto/update-list.dto";
+import { CreateListDTO, UpdateListDTO } from "./list.dto";
 
 export class ListRepository {
     async create(dto: CreateListDTO): Promise<List> {
@@ -12,10 +8,10 @@ export class ListRepository {
             data: {
                 title: dto.title,
                 description: dto.description,
-                creator_id: dto.userId,
+                creator_id: dto.creatorId,
                 users: {
                     create: {
-                        user_id: dto.userId,
+                        user_id: dto.creatorId,
                         role: Role.OWNER
                     }
                 }
@@ -77,36 +73,14 @@ export class ListRepository {
         })
     }
 
-    async findUserRole(
-        userId: number, 
-        listId: number
-    ): Promise<Role | null> {
-        const record = await prisma.userList.findUnique({
-            where: {
-                user_id_list_id: {
-                    user_id: userId,
-                    list_id: listId,
-                },
-            },
-        })
-        return record?.role ?? null
-    }
-
     async update(dto: UpdateListDTO) {
         return prisma.list.update({
-            where: {id: dto.listId},
+            where: {id: dto.id},
             data: { 
                 title: dto.title, 
                 description: dto.description
             }
         })
-    }
-
-    async updateName(listId: number, name: string) {
-        return prisma.list.update({
-            where: { id: listId },
-            data: { title: name },
-        });
     }
 
     async delete(listId: number): Promise<void> {

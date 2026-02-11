@@ -1,27 +1,88 @@
 import { Router } from "express";
 import { listController } from "./list.controller";
-import { validateAddListItem, validateAddListMember, validateCreateList, validateDeleteList, 
-         validateGetListById, validateGetListItems, validateGetListMembers, validateGetUserLists, 
-         validateRemoveListItem, 
-         validateRemoveListMember, 
-         validateUpdateList, validateUpdateListItem, validateUpdateListMember } from "./list.validator";
+import { validateRequest } from "../../middlewars/validateRequest";
+import { AddListItemBodySchema, AddListMemberBodySchema, CreateListBodySchema, GetUserListsQuerySchema, 
+         ListIdItemIdParamsSchema, ListIdMemberIdParamsSchema, ListIdParamSchema, UpdateListBodySchema, 
+         UpdateListItemBodySchema, UpdateListMemberBodySchema } from "./list.schema";
 
 const router = Router();
 
-router.post('/', validateCreateList, listController.createList)
-router.get('/:id', validateGetListById, listController.getListById)
-router.get('/', validateGetUserLists, listController.getUserLists)
-router.patch('/:id', validateUpdateList, listController.updateList)
-router.delete('/:id', validateDeleteList, listController.deleteList)
+router.post(
+    '/',
+    validateRequest({ body: CreateListBodySchema }),
+    listController.createList
+)
 
-router.post('/:id/member', validateAddListMember, listController.addListMember)
-router.get('/:id/member', validateGetListMembers, listController.getListMembers)
-router.patch('/:listId/member/:memberId', validateUpdateListMember, listController.updateListMember)
-router.delete('/:listId/member/:memberId', validateRemoveListMember, listController.removeListMember)
+router.get(
+    '/:listId',
+    validateRequest({ params: ListIdParamSchema }),
+    listController.getListById
+)
 
-router.post('/:id/item', validateAddListItem, listController.addListItem)
-router.get('/:id/item', validateGetListItems ,listController.getListItems)
-router.patch('/:listId/item/:itemId', validateUpdateListItem, listController.updateListItem)
-router.delete('/:listId/item/:itemId', validateRemoveListItem, listController.removeListItem)
+router.get(
+    '/',
+    validateRequest({ query: GetUserListsQuerySchema }),
+    listController.getUserLists
+)
+
+router.patch(
+    '/:listId',
+    validateRequest({ params: ListIdParamSchema, body: UpdateListBodySchema }),
+    listController.updateList
+)
+
+router.delete(
+    '/:lidtId',
+    validateRequest({ params: ListIdParamSchema }),
+    listController.deleteList
+)
+
+router.post(
+    '/:listId/member',
+    validateRequest({ params: ListIdParamSchema, body: AddListMemberBodySchema }),
+    listController.addListMember
+)
+
+router.get(
+    '/:listId/member',
+    validateRequest({ params: ListIdParamSchema }),
+    listController.getListMembers
+)
+
+router.patch(
+    '/:listId/member/:memberId',
+    validateRequest({ params: ListIdMemberIdParamsSchema, body: UpdateListMemberBodySchema }),
+    listController.updateListMember
+)
+
+router.delete(
+    '/:listId/member/:memberId',
+    validateRequest({ params: ListIdMemberIdParamsSchema }),
+    listController.removeListMember
+)
+
+router.post(
+    '/:listId/item',
+    validateRequest({ params: ListIdParamSchema, body: AddListItemBodySchema }),
+    listController.addListItem
+)
+
+router.get(
+    '/:listId/item',
+    validateRequest({ params: ListIdParamSchema }),
+    listController.getListItems
+)
+
+router.patch(
+    '/:listId/item/:itemId',
+    validateRequest({ params: ListIdItemIdParamsSchema, body: UpdateListItemBodySchema}),
+    listController.updateListItem
+)
+
+router.delete(
+    '/:listId/item/:itemId',
+    validateRequest({ params: ListIdItemIdParamsSchema }),
+    listController.removeListItem
+)
 
 export default router

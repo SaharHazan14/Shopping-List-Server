@@ -1,13 +1,38 @@
 import { Router } from "express";
 import { itemController } from "./item.controller";
-import { validateCreateItem, validateDeleteItem, validateGetItemById, validateGetUserItems, validateUpdateItem } from "./item.validator";
+import { validateRequest } from "../../middlewars/validateRequest";
+import { CreateItemBodySchema, GetUserItemsQuerySchema, ItemIdParamSchema, UpdateItemBodySchema } from "./item.schema";
 
 const router = Router()
 
-router.post('/', validateCreateItem, itemController.createItem)
-router.get('/:id', validateGetItemById, itemController.getItemById)
-router.get('/', validateGetUserItems, itemController.getUserItems)
-router.patch('/:id', validateUpdateItem, itemController.updateItem)
-router.delete('/:id', validateDeleteItem, itemController.deleteItem)
+router.post(
+    '/',
+    validateRequest({ body: CreateItemBodySchema }),
+    itemController.createItem
+)
+
+router.get(
+    '/:listId',
+    validateRequest({ params: ItemIdParamSchema }),
+    itemController.getItemById
+)
+
+router.get(
+    '/',
+    validateRequest({ query: GetUserItemsQuerySchema }),
+    itemController.getUserItems
+)
+
+router.patch(
+    '/:listId',
+    validateRequest({ params: ItemIdParamSchema, body: UpdateItemBodySchema }),
+    itemController.updateItem
+)
+
+router.delete(
+    '/:listId',
+    validateRequest({ params: ItemIdParamSchema }),
+    itemController.deleteItem
+)
 
 export default router
