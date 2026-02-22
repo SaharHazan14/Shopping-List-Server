@@ -1,46 +1,37 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import jwksClient from "jwks-rsa";
+import { BadRequestError, UnauthorizedError } from "../errors";
+import { verifyCognitoAccessToken } from "../modules/auth/token.service";
+import { UserService } from "../modules/user/user.service";
+import { UserRepository } from "../modules/user/user.repository";
 
-const client = jwksClient({
-  jwksUri: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_r8jOu7JSM/.well-known/jwks.json",
-  cache: true,
-  rateLimit: true,
-});
+const userService = new UserService(new UserRepository())
 
-function getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
-  client.getSigningKey(header.kid!, (err, key) => {
-    if (err) {
-      console.error("Error fetching signing key:", err);
-      return callback(err, undefined);
+export async function authenticate(req: Request, res: Response, next: NextFunction) {
+    const token = extractToken(req.headers.authorization);
+    
+    if (!token) {
+        throw new BadRequestError("No token provided");
     }
-    const signingKey = key!.getPublicKey();
-    callback(null, signingKey);
-  });
+
+    const payload = await verifyCognitoAccessToken(token)
+
+    const user = await userService.findByCognitoSub(payload.sub)
+    if (!user) {
+        return res.status(401).json({ message: "User not provisioned" });
+    }
+
+    req.user = user
+
+    next()
 }
 
-export function verifyAccessToken(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Missing Authorization header" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  jwt.verify(
-    token,
-    getKey,
-    {
-      issuer: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_r8jOu7JSM",
-      algorithms: ["RS256"],
-    },
-    (err, decoded) => {
-      if (err) {
-        console.error("JWT verification failed:", err);
-        return res.status(401).json({ message: "Invalid token", error: err.message });
-      }
-      req.user = decoded;
-      next();
+function extractToken(authHeader: string | undefined): string {
+    if (!authHeader) {
+        throw new UnauthorizedError("Missing Authorization header");
     }
-  );
+    if (!authHeader.startsWith("Bearer ")) {
+        throw new UnauthorizedError("Invalid Authorization header format");
+    }
+    
+    return authHeader.split(" ")[1];
 }

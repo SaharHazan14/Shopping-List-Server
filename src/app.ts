@@ -3,13 +3,13 @@ import listRoutes from './modules/list/list.routes'
 import itemRoutes from './modules/item/item.routes'
 import authRoutes from './modules/auth/auth.routes'
 import { errorHandler } from './middlewars/error.middleware';
-import { verifyAccessToken } from './middlewars/auth.middleware';
+import { authenticate } from './middlewars/auth.middleware';
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/protected", verifyAccessToken, (req, res) => {
+app.get("/protected", authenticate, (req, res) => {
   res.json({
     message: "Access granted!",
     user: req.user,
