@@ -15,7 +15,7 @@ class ListController {
         const dto: CreateListDTO = {
             title: req.body.title,
             description: req.body.description,
-            creatorId: 1 // req.user.id 
+            creatorId: req.user.id 
         }
         const list = await service.createList(dto)
         res.status(201).json(list)
@@ -24,7 +24,7 @@ class ListController {
     async getListById(req: Request, res: Response) {
         const listId = Number(req.params.listId)
         
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const list = await service.getListById(listId, userId)
         res.status(200).json(list)
@@ -33,7 +33,7 @@ class ListController {
     async getUserLists(req: Request, res: Response) {
         const includeMember = req.query.includeMember === "true"
 
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const lists = await service.getUserLists(userId, includeMember)
         res.status(200).json(lists)
@@ -46,7 +46,7 @@ class ListController {
             description: req.body.description
         }
 
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const updated = await service.updateList(userId, dto)
         res.status(200).json(updated)
@@ -55,7 +55,7 @@ class ListController {
     async deleteList(req: Request, res: Response) {
         const listId = Number(req.params.listId)
 
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         await service.deleteList(userId, listId)
         res.status(204).send()
@@ -68,7 +68,7 @@ class ListController {
             role: req.body.role
         }
 
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const listMember = await service.addListMember(dto, userId)
         res.status(201).json(listMember)
@@ -77,7 +77,7 @@ class ListController {
     async getListMembers(req: Request, res: Response) {
         const listId = Number(req.params.listId)
         
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const listMembers = await service.getListMembers(listId, userId)
         res.status(200).json(listMembers)
@@ -90,7 +90,7 @@ class ListController {
             role: req.body.role
         }
 
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const updated = await service.updateListMember(dto, userId)
         res.status(200).json(updated)
@@ -100,7 +100,7 @@ class ListController {
         const listId = Number(req.params.listId)
         const memberId = Number(req.params.memberId)
 
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         await service.removeListMember(listId, memberId, userId)
         res.status(204).send()
@@ -114,7 +114,7 @@ class ListController {
             isChecked: req.body.isChecked
         }
 
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const listItem = await service.addListItem(dto, userId)
         res.status(201).json(listItem) 
@@ -123,7 +123,7 @@ class ListController {
     async getListItems(req: Request, res: Response) {
         const listId = Number(req.params.listId)
         
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const listItems = await service.getListItems(listId, userId) 
         res.status(200).json(listItems)
@@ -137,7 +137,7 @@ class ListController {
             isChecked: req.body.isChecked
         }
 
-        const userId = 1 // req.user.id
+        const userId = req.user.id
 
         const updated = await service.updateListItem(dto, userId)
         res.status(200).json(updated)
@@ -147,7 +147,7 @@ class ListController {
         const listId = Number(req.params.listId)
         const itemId = Number(req.params.itemId)
 
-        const userId = req.body.userId // req.user.id
+        const userId = req.user.id
 
         await service.removeListItem(listId, itemId, userId)
         res.status(204).send()

@@ -1,9 +1,13 @@
 import { Response, Request, NextFunction } from "express";
-import { NotFoundError, ForbiddenError, BadRequestError, ConflictError } from "../errors/index.js"
+import { NotFoundError, ForbiddenError, BadRequestError, ConflictError, UnauthorizedError } from "../errors/index.js"
 
 export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
   if (err instanceof BadRequestError) {
     return res.status(400).json({ message: err.message})
+  }
+
+  if (err instanceof UnauthorizedError) {
+    return res.status(401).json({ message: err.message })
   }
   
   if (err instanceof ForbiddenError) {

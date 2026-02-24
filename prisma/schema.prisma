@@ -31,9 +31,8 @@ enum Category {
 
 model User {
   id              Int          @id @default(autoincrement())
-  email           String       @unique
-  password_hash   String
-  name            String
+  cognitoSub      String       @unique
+  email           String
 
   lists_created   List[]       @relation("ListsCreated")
   list_roles      UserList[]
