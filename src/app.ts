@@ -17,8 +17,8 @@ app.get("/protected", authenticate, (req, res) => {
 });
 
 app.use('/auth', authRoutes)
-app.use('/list', listRoutes)
-app.use('/item', itemRoutes)
+app.use('/list', authenticate, listRoutes)
+app.use('/item', authenticate, itemRoutes)
 
 app.use(errorHandler)
 
