@@ -6,8 +6,10 @@ import { UserRepository } from "../user/user.repository"
 
 const userService = new UserService(new UserRepository())
 
-export async function handleCallback(req: Request, res: Response) {
-  const code = req.query.code as string
+export async function exchangeCode(req: Request, res: Response) {
+  const { code } = req.body
+  console.log("Received code:", code) // Debug log
+  
   if (!code) {
     return res.status(400).json({ message: "Authorization code missing" })
   }
@@ -23,6 +25,8 @@ export async function handleCallback(req: Request, res: Response) {
       redirect_uri: process.env.CALLBACK_URL!
     })
 
+    console.log("Sending token request to Cognito with redirect URI:", process.env.CALLBACK_URL); // Debug log
+
     const tokenResponse = await axios.post(
       `https://${process.env.COGNITO_DOMAIN}/oauth2/token`,
       params.toString(),
@@ -35,8 +39,7 @@ export async function handleCallback(req: Request, res: Response) {
     )
 
     const { access_token, id_token, refresh_token } = tokenResponse.data
-    
-    // add check for exceptions
+
     const idPayload = await verifyCognitoIdToken(id_token)
     
     const { sub, email } = idPayload
@@ -46,10 +49,13 @@ export async function handleCallback(req: Request, res: Response) {
       email
     })
 
-    return res.json({ access_token, id_token, refresh_token })  
-
+    return res.status(200).json({
+      accessToken: access_token,
+      idToken: id_token,
+      refreshToken: refresh_token
+    })
   } catch (err: any) {
     console.error(err.response?.data || err.message)
-    return res.status(500).json({ message: "Token exchange failed" })
+    return res.status(500).json({ message: "Token exchange failed", error: err.response?.data })
   }
 }
