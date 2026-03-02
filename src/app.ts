@@ -1,4 +1,5 @@
 import express from 'express';
+import userRoutes from './modules/user/user.routes'
 import listRoutes from './modules/list/list.routes'
 import itemRoutes from './modules/item/item.routes'
 import authRoutes from './modules/auth/auth.routes'
@@ -25,6 +26,7 @@ app.get("/protected", authenticate, (req, res) => {
 });
 
 app.use('/auth', authRoutes)
+app.use('/user', authenticate, userRoutes)
 app.use('/list', authenticate, listRoutes)
 app.use('/item', authenticate, itemRoutes)
 

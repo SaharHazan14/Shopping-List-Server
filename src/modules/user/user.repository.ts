@@ -17,4 +17,10 @@ export class UserRepository {
             where: {cognitoSub: cognitoSub}
         })
     }
+
+    async findById(id: number): Promise<User | null> {
+        return prisma.user.findUnique({
+            where: { id: id }
+        })
+    }
 }
