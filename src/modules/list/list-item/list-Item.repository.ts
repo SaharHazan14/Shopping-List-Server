@@ -33,6 +33,38 @@ export class ListItemRepository {
         })
     }
 
+    async getItemStats(listIds: number[]) {
+        const items = await prisma.listItem.findMany({
+            where: {
+                list_id: {
+                    in: listIds
+                }
+            }, 
+            select: {
+                list_id: true,
+                is_checked: true
+            }
+        })
+
+        const stats = new Map<number, { totalItems: number; checkedItems: number }>();
+
+        for (const item of items) {
+            if (!stats.has(item.list_id)) {
+                stats.set(item.list_id, { totalItems: 0, checkedItems: 0 });
+            }
+
+            const entry = stats.get(item.list_id)!;
+            
+            entry.totalItems++;
+            
+            if (item.is_checked) {
+                entry.checkedItems++;
+            }
+        }
+
+        return stats;
+    }
+
     async update(dto: UpdateListItemDTO): Promise<ListItem> {
         return prisma.listItem.update({
             where: {

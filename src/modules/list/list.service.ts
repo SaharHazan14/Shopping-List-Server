@@ -1,5 +1,5 @@
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../errors";
-import { CreateListDTO, UpdateListDTO, ListResponseDTO } from "./list.dto";
+import { CreateListDTO, UpdateListDTO, ListResponseDTO, ListStatsDTO } from "./list.dto";
 import { ListRepository } from "./list.repository";
 import { AddListMemberDTO, UpdateListMemberDTO, ListMemberResponseDTO } from "./user-list/user-list.dto";
 import { Role } from "../../../generated/prisma/enums";
@@ -7,6 +7,7 @@ import { AddListItemDTO, UpdateListItemDTO, ListItemResponseDTO } from "./list-i
 import { ItemRepository } from "../item/item.repository";
 import { ListItemRepository } from "./list-item/list-Item.repository";
 import { UserListRepository } from "./user-list/user-list.repository";
+import { UserRepository } from "../user/user.repository";
 import { List, ListItem, UserList } from "../../../generated/prisma/client";
 
 export class ListService {
@@ -14,7 +15,8 @@ export class ListService {
         private readonly listRepository: ListRepository,
         private readonly itemRepository: ItemRepository,
         private readonly userListRepository: UserListRepository,
-        private readonly listItemRepository: ListItemRepository
+        private readonly listItemRepository: ListItemRepository,
+        private readonly userRepository: UserRepository
     ) {}
 
     // Mappers
@@ -129,6 +131,34 @@ export class ListService {
             : await this.listRepository.findByCreator(userId)
 
         return lists.map(list => this.toListResponseDTO(list))
+    }
+
+    async getUserListsWithStats(userId: number, includeMember: boolean): Promise<ListStatsDTO[]> {
+        const lists = includeMember 
+            ? await this.listRepository.findByUser(userId) 
+            : await this.listRepository.findByCreator(userId)
+
+        const listIds = lists.map(list => list.id)
+
+        const stats = await this.listItemRepository.getItemStats(listIds)
+
+        // deduplicate creator ids so we query users only once per creator
+        const creatorIds = Array.from(new Set(lists.map(list => list.creator_id)))
+
+        const emails = await this.userRepository.getEmailsByIds(creatorIds)
+
+        return lists.map(list => {
+            const stat = stats.get(list.id)
+
+            return {
+                listId: list.id,
+                title: list.title,
+                description: list.description,
+                creatorEmail: emails.get(list.creator_id) || "unknown",
+                totalItems: stat ? stat.totalItems : 0,
+                checkedItems: stat ? stat.checkedItems : 0
+            }
+        })
     }
 
     async updateList(userId: number, dto: UpdateListDTO): Promise<ListResponseDTO> {

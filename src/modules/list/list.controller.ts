@@ -7,8 +7,9 @@ import { ItemRepository } from "../item/item.repository"
 import { UserListRepository } from "./user-list/user-list.repository"
 import { ListItemRepository } from "./list-item/list-Item.repository"
 import { AddListItemDTO, UpdateListItemDTO } from "./list-item/list-item.dto"
+import { UserRepository } from "../user/user.repository"
 
-const service = new ListService(new ListRepository, new ItemRepository, new UserListRepository, new ListItemRepository)
+const service = new ListService(new ListRepository, new ItemRepository, new UserListRepository, new ListItemRepository, new UserRepository())
 
 class ListController {
     async createList(req: Request, res: Response) {
@@ -35,7 +36,7 @@ class ListController {
 
         const userId = req.user.id
 
-        const lists = await service.getUserLists(userId, includeMember)
+        const lists = await service.getUserListsWithStats(userId, includeMember)
         res.status(200).json(lists)
     }
 
