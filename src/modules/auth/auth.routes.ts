@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { handleCallback } from "./auth.controller";
+import { exchangeCode } from "./auth.controller";
 
 const router = Router()
 
-router.get(
-    '/callback',
-    handleCallback
+router.post(
+    '/exchange',
+    exchangeCode
 )
 
 export default router

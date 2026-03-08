@@ -1,6 +1,6 @@
 import { List, Role } from "../../../generated/prisma/client";
 import { prisma } from "../../../prisma/prisma";
-import { CreateListDTO, UpdateListDTO } from "./list.dto";
+import { CreateListDTO, UpdateListDTO, ListStatsDTO } from "./list.dto";
 
 export class ListRepository {
     async create(dto: CreateListDTO): Promise<List> {
