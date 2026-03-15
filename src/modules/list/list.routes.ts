@@ -32,7 +32,7 @@ router.patch(
 )
 
 router.delete(
-    '/:lidtId',
+    '/:listId',
     validateRequest({ params: ListIdParamSchema }),
     listController.deleteList
 )

@@ -13,6 +13,27 @@ export class UserListRepository {
         })
     }
 
+    // New API to get list members with their emails
+    async findListMembersByListId(listId: number): Promise<{ listId: number; memberId: number; role: Role; email: string }[]> {
+        const rows = await prisma.userList.findMany({
+            where: {
+                list_id: listId
+            },
+            include: {
+                user: {
+                    select: { email: true }
+                }
+            }
+        })
+
+        return rows.map(r => ({
+            listId: r.list_id,
+            memberId: r.user_id,
+            role: r.role,
+            email: r.user.email
+        }))
+    }
+
     async findByListId(listId: number): Promise<UserList[]> {
         return prisma.userList.findMany({
             where: {

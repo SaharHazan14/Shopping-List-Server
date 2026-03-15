@@ -14,7 +14,15 @@ export interface UpdateListItemDTO {
 
 export interface ListItemResponseDTO {
     listId: number,
-    itemId: number, 
+    itemId: number,
+    quantity: number,
+    isChecked: boolean
+}
+
+export interface ListItemWithNameDTO {
+    listId: number,
+    itemId: number,
+    itemName: string,
     quantity: number,
     isChecked: boolean
 }

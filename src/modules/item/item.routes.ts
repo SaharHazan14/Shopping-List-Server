@@ -12,7 +12,7 @@ router.post(
 )
 
 router.get(
-    '/:listId',
+    '/:itemId',
     validateRequest({ params: ItemIdParamSchema }),
     itemController.getItemById
 )
@@ -24,13 +24,13 @@ router.get(
 )
 
 router.patch(
-    '/:listId',
+    '/:itemId',
     validateRequest({ params: ItemIdParamSchema, body: UpdateItemBodySchema }),
     itemController.updateItem
 )
 
 router.delete(
-    '/:listId',
+    '/:itemId',
     validateRequest({ params: ItemIdParamSchema }),
     itemController.deleteItem
 )
