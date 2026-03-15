@@ -3,7 +3,7 @@ import { CreateListDTO, UpdateListDTO, ListResponseDTO, ListStatsDTO } from "./l
 import { ListRepository } from "./list.repository";
 import { AddListMemberDTO, UpdateListMemberDTO, ListMemberResponseDTO } from "./user-list/user-list.dto";
 import { Role } from "../../../generated/prisma/enums";
-import { AddListItemDTO, UpdateListItemDTO, ListItemResponseDTO } from "./list-item/list-item.dto";
+import { AddListItemDTO, UpdateListItemDTO, ListItemResponseDTO, ListItemWithNameDTO } from "./list-item/list-item.dto";
 import { ItemRepository } from "../item/item.repository";
 import { ListItemRepository } from "./list-item/list-Item.repository";
 import { UserListRepository } from "./user-list/user-list.repository";
@@ -195,14 +195,17 @@ export class ListService {
         return this.toListMemberResponseDTO(listMember)
     }
 
-    async getListMembers(listId: number, userId: number): Promise<ListMemberResponseDTO[]> {
+    //async getListMembers(listId: number, userId: number): Promise<ListMemberResponseDTO[]> {
+    async getListMembers(listId: number, userId: number) {
         await this.assertListExists(listId)
 
         await this.assertUserRole(userId, listId, Object.values(Role))
 
-        const listMembers = await this.userListRepository.findByListId(listId)
+        //const listMembers = await this.userListRepository.findByListId(listId)
+        const listMembers = await this.userListRepository.findListMembersByListId(listId)
 
-        return listMembers.map(listMember => this.toListMemberResponseDTO(listMember))
+        //return listMembers.map(listMember => this.toListMemberResponseDTO(listMember))
+        return listMembers
     }
 
     async updateListMember(dto: UpdateListMemberDTO, userId: number): Promise<ListMemberResponseDTO> {
@@ -248,14 +251,22 @@ export class ListService {
         return this.toListItemResponseDTO(listItem)
     }
 
-    async getListItems(listId: number, userId: number): Promise<ListItemResponseDTO[]> {
+    async getListItems(listId: number, userId: number): Promise<ListItemWithNameDTO[]> {
         await this.assertListExists(listId)
 
         await this.assertUserRole(userId, listId, Object.values(Role))
 
-        const listItems = await this.listItemRepository.findByListId(listId)
+        const listItems = await this.listItemRepository.getItemsByListId(listId)
 
-        return listItems.map(listItem => this.toListItemResponseDTO(listItem))
+        return listItems.map(listItem => {
+            return {
+                listId: listItem.list_id,
+                itemId: listItem.item_id,
+                itemName: listItem.item.name,
+                quantity: listItem.quantity,
+                isChecked: listItem.is_checked,
+            }
+        })
     }
 
     async updateListItem(dto: UpdateListItemDTO, userId: number): Promise<ListItemResponseDTO> {

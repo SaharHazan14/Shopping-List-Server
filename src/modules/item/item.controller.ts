@@ -19,7 +19,7 @@ class ItemController {
     }
 
     async getItemById(req: Request, res: Response) {
-        const itemId = Number(req.params.id)
+        const itemId = Number(req.params.itemId)
 
         const userId = req.user.id
 
@@ -37,7 +37,7 @@ class ItemController {
 
     async updateItem(req: Request, res: Response) {
         const dto: UpdateItemDTO =  {
-            itemId: Number(req.params.id),
+            itemId: Number(req.params.itemId),
             name: req.body.name,
             category: req.body.category,
             imageUrl: req.body.imageUrl
@@ -50,7 +50,7 @@ class ItemController {
     }
     
     async deleteItem(req: Request, res: Response) {
-        const itemId = Number(req.params.id)
+        const itemId = Number(req.params.itemId)
         const userId = req.user.id
 
         await service.deleteItem(userId, itemId)

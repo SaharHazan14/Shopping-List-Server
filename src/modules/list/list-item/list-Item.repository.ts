@@ -33,6 +33,21 @@ export class ListItemRepository {
         })
     }
 
+    // New
+    async getItemsByListId(listId: number) {
+        return prisma.listItem.findMany({
+            where: { list_id: listId },
+            include: {
+                item: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        });
+    }
+
     async getItemStats(listIds: number[]) {
         const items = await prisma.listItem.findMany({
             where: {

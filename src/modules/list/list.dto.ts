@@ -14,7 +14,7 @@ export interface ListResponseDTO {
     id: number,
     title: string,
     description: string | null,
-    creatorEmail: string
+    creatorId: number
 }
 
 export interface ListStatsDTO {
