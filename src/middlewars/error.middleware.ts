@@ -1,7 +1,10 @@
 import { Response, Request, NextFunction } from "express";
 import { NotFoundError, ForbiddenError, BadRequestError, ConflictError, UnauthorizedError } from "../errors/index.js"
+import logger from "../logger"
 
 export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
+  logger.error('Unhandled error in request', { path: req.path, method: req.method, error: err })
+
   if (err instanceof BadRequestError) {
     return res.status(400).json({ message: err.message})
   }

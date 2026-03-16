@@ -9,6 +9,7 @@ import { ListItemRepository } from "./list-item/list-Item.repository";
 import { UserListRepository } from "./user-list/user-list.repository";
 import { UserRepository } from "../user/user.repository";
 import { List, ListItem, UserList } from "../../../generated/prisma/client";
+import logger from "../../logger";
 
 export class ListService {
     constructor(
@@ -110,10 +111,11 @@ export class ListService {
     // Services 
 
     async createList(dto: CreateListDTO): Promise<ListResponseDTO> {
+        logger.info('Creating list in service', { title: dto.title, creatorId: dto.creatorId })
         await this.assertUniqueTitleForCreator(dto.title, dto.creatorId)
 
         const list = await this.listRepository.create(dto)
-        
+        logger.info('List created', { listId: list.id })
         return this.toListResponseDTO(list)
     }
     
@@ -184,6 +186,7 @@ export class ListService {
     }
 
     async addListMember(dto: AddListMemberDTO, userId: number): Promise<ListMemberResponseDTO> {        
+        logger.info('Adding member to list in service', { listId: dto.listId, memberId: dto.memberId, by: userId })
         await this.assertListExists(dto.listId)
 
         await this.assertUserRole(userId, dto.listId, [Role.OWNER])
@@ -192,6 +195,7 @@ export class ListService {
 
         const listMember = await this.userListRepository.create(dto)
 
+        logger.info('List member added', { listId: dto.listId, memberId: listMember.user_id })
         return this.toListMemberResponseDTO(listMember)
     }
 
@@ -231,23 +235,26 @@ export class ListService {
     }
 
     async addListItem(dto: AddListItemDTO, userId: number): Promise<ListItemResponseDTO> {
+        logger.info('Adding item to list in service', { listId: dto.listId, itemId: dto.itemId, by: userId })
         await this.assertListExists(dto.listId)
 
         await this.assertUserRole(userId, dto.listId, [Role.OWNER, Role.EDITOR])
 
         const item = await this.itemRepository.findById(dto.itemId)
         if (!item) {
+            logger.warn('Attempt to add non-existing item to list', { itemId: dto.itemId })
             throw new NotFoundError("item not found")
         }
 
         if (item.creator_id !== null && item.creator_id !== userId) {
+            logger.warn('User tried to add item they do not own', { itemId: dto.itemId, userId })
             throw new ForbiddenError("access denied")
         }
 
         await this.assertItemNotExistsInList(dto.itemId, dto.listId)
 
         const listItem = await this.listItemRepository.craete(dto)
-
+        logger.info('List item added', { listId: dto.listId, itemId: dto.itemId })
         return this.toListItemResponseDTO(listItem)
     }
 

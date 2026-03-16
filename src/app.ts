@@ -6,8 +6,15 @@ import authRoutes from './modules/auth/auth.routes'
 import { errorHandler } from './middlewars/error.middleware';
 import { authenticate } from './middlewars/auth.middleware';
 import cors from 'cors';
+import logger from './logger';
 
 const app = express();
+
+// Basic request logging
+app.use((req, _res, next) => {
+  logger.info(`${req.method} ${req.path}`);
+  next();
+});
 
 app.use(express.json());
 
