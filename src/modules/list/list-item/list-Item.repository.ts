@@ -1,11 +1,9 @@
 import { ListItem } from "../../../../generated/prisma/client";
 import { prisma } from "../../../../prisma/prisma"; 
 import { AddListItemDTO, UpdateListItemDTO } from "./list-item.dto"
-import logger from "../../../logger"
 
 export class ListItemRepository {
     async craete(dto: AddListItemDTO): Promise<ListItem> {
-        logger.debug('Creating list item in DB', { listId: dto.listId, itemId: dto.itemId })
         const created = await prisma.listItem.create({
             data: {
                 list_id: dto.listId,
@@ -14,12 +12,10 @@ export class ListItemRepository {
                 is_checked: dto.isChecked
             }
         })
-        logger.info('List item created', { listId: created.list_id, itemId: created.item_id })
         return created
     }
 
     async findByListIdAndItemId(listId: number, itemId: number): Promise<ListItem | null> {
-        logger.debug('Finding list-item by list and item id', { listId, itemId })
         return prisma.listItem.findUnique({
             where: {
                 list_id_item_id: {
@@ -31,7 +27,6 @@ export class ListItemRepository {
     }
 
     async findByListId(listId: number): Promise<ListItem[]> {
-        logger.debug('Fetching list items for list', { listId })
         return prisma.listItem.findMany({
             where: {
                 list_id: listId
@@ -41,7 +36,6 @@ export class ListItemRepository {
 
     // New
     async getItemsByListId(listId: number) {
-        logger.debug('Getting list items with item names', { listId })
         return prisma.listItem.findMany({
             where: { list_id: listId },
             include: {
@@ -56,7 +50,6 @@ export class ListItemRepository {
     }
 
     async getItemStats(listIds: number[]) {
-        logger.debug('Computing item stats for lists', { listIds })
         const items = await prisma.listItem.findMany({
             where: {
                 list_id: {
@@ -89,7 +82,6 @@ export class ListItemRepository {
     }
 
     async update(dto: UpdateListItemDTO): Promise<ListItem> {
-        logger.debug('Updating list-item in DB', { listId: dto.listId, itemId: dto.itemId })
         const updated = await prisma.listItem.update({
             where: {
                 list_id_item_id: {
@@ -102,12 +94,10 @@ export class ListItemRepository {
                 is_checked: dto.isChecked
             }
         })
-        logger.info('List-item updated', { listId: updated.list_id, itemId: updated.item_id })
         return updated
     }
 
     async delete(listId: number, itemId: number): Promise<void> {
-        logger.debug('Deleting list-item from DB', { listId, itemId })
         await prisma.listItem.delete({
             where: {
                 list_id_item_id: {

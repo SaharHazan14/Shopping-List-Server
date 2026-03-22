@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { itemController } from "./item.controller";
-import { validateRequest } from "../../middlewars/validateRequest";
+import { validateRequest } from "../../middlewares/validateRequest";
 import { CreateItemBodySchema, GetUserItemsQuerySchema, ItemIdParamSchema, UpdateItemBodySchema } from "./item.schema";
 
 const router = Router()

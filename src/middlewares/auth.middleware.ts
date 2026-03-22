@@ -8,7 +8,6 @@ import logger from "../logger";
 const userService = new UserService(new UserRepository())
 
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
-    logger.debug('Authenticating request', { path: req.path, method: req.method })
     const token = extractToken(req.headers.authorization);
     
     if (!token) {

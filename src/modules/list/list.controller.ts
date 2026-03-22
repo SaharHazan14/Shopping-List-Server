@@ -8,7 +8,6 @@ import { UserListRepository } from "./user-list/user-list.repository"
 import { ListItemRepository } from "./list-item/list-Item.repository"
 import { AddListItemDTO, UpdateListItemDTO } from "./list-item/list-item.dto"
 import { UserRepository } from "../user/user.repository"
-import logger from "../../logger"
 
 const service = new ListService(new ListRepository, new ItemRepository, new UserListRepository, new ListItemRepository, new UserRepository())
 
@@ -19,9 +18,8 @@ class ListController {
             description: req.body.description,
             creatorId: req.user.id 
         }
-        logger.info('Creating list', { title: dto.title, creatorId: dto.creatorId })
+
         const list = await service.createList(dto)
-        logger.debug('List created', { listId: list.id })
         res.status(201).json(list)
     }
 
@@ -30,7 +28,6 @@ class ListController {
         
         const userId = req.user.id
 
-        logger.info('Fetching list by id', { listId, userId })
         const list = await service.getListById(listId, userId)
         res.status(200).json(list)
     }
@@ -40,7 +37,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Getting user lists', { userId, includeMember })
         const lists = await service.getUserListsWithStats(userId, includeMember)
         res.status(200).json(lists)
     }
@@ -54,7 +50,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Updating list', { listId: dto.id, userId })
         const updated = await service.updateList(userId, dto)
         res.status(200).json(updated)
     }
@@ -64,7 +59,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Deleting list', { listId, userId })
         await service.deleteList(userId, listId)
         res.status(204).send()
     }
@@ -78,7 +72,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Adding list member', { listId: dto.listId, memberId: dto.memberId, by: userId })
         const listMember = await service.addListMember(dto, userId)
         res.status(201).json(listMember)
     }
@@ -88,7 +81,6 @@ class ListController {
         
         const userId = req.user.id
 
-        logger.info('Getting list members', { listId, userId })
         const listMembers = await service.getListMembers(listId, userId)
         res.status(200).json(listMembers)
     }
@@ -102,7 +94,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Updating list member', { listId: dto.listId, memberId: dto.memberId, by: userId })
         const updated = await service.updateListMember(dto, userId)
         res.status(200).json(updated)
     }
@@ -113,7 +104,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Removing list member', { listId, memberId, by: userId })
         await service.removeListMember(listId, memberId, userId)
         res.status(204).send()
     }
@@ -128,7 +118,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Adding list item', { listId: dto.listId, itemId: dto.itemId, by: userId })
         const listItem = await service.addListItem(dto, userId)
         res.status(201).json(listItem) 
     }
@@ -138,7 +127,6 @@ class ListController {
         
         const userId = req.user.id
 
-        logger.info('Getting list items', { listId, userId })
         const listItems = await service.getListItems(listId, userId) 
         res.status(200).json(listItems)
     }
@@ -153,7 +141,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Updating list item', { listId: dto.listId, itemId: dto.itemId, by: userId })
         const updated = await service.updateListItem(dto, userId)
         res.status(200).json(updated)
     }
@@ -164,7 +151,6 @@ class ListController {
 
         const userId = req.user.id
 
-        logger.info('Removing list item', { listId, itemId, by: userId })
         await service.removeListItem(listId, itemId, userId)
         res.status(204).send()
     }

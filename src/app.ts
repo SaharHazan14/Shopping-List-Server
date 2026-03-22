@@ -3,18 +3,14 @@ import userRoutes from './modules/user/user.routes'
 import listRoutes from './modules/list/list.routes'
 import itemRoutes from './modules/item/item.routes'
 import authRoutes from './modules/auth/auth.routes'
-import { errorHandler } from './middlewars/error.middleware';
-import { authenticate } from './middlewars/auth.middleware';
+import { errorHandler } from './middlewares/error.middleware';
+import { authenticate } from './middlewares/auth.middleware';
 import cors from 'cors';
-import logger from './logger';
+import { requestLogger } from './middlewares/requestLogger';
 
 const app = express();
 
-// Basic request logging
-app.use((req, _res, next) => {
-  logger.info(`${req.method} ${req.path}`);
-  next();
-});
+app.use(requestLogger);
 
 app.use(express.json());
 

@@ -16,32 +16,43 @@ export class UserService {
     }
 
     async getOrCreateUser(dto: CreateUserDTO): Promise<DBUserDTO> {
-        logger.info('Get or create user', { cognitoSub: dto.cognitoSub })
         const existingUser = await this.userRepository.findByCognitoSub(dto.cognitoSub)
         if (existingUser) {
-            logger.debug('User exists, returning existing user', { id: existingUser.id })
+            logger.info("Fetched existing user successfully", { 
+                id: existingUser.id, 
+                email: existingUser.email 
+            })
             return this.toDBUserDTO(existingUser)
         }
 
         const created = await this.userRepository.create(dto)
-        logger.info('Created new user', { id: created.id })
+        logger.info("New user created successfully", { 
+            id: created.id,
+            email: created.email
+         })
+
         return this.toDBUserDTO(created)
     }
 
     async findByCognitoSub(cognitoSub: string): Promise<DBUserDTO | null> {
-        logger.debug('Looking up user by cognitoSub', { cognitoSub })
         const user = await this.userRepository.findByCognitoSub(cognitoSub)
         return user ? this.toDBUserDTO(user) : null
     }
 
     async findById(id: number): Promise<DBUserDTO> {
-        logger.debug('Finding user by id', { id })
         const user = await this.userRepository.findById(id)
         
         if (!user) {
-            logger.warn('User not found', { id })
+            logger.warn("Attempted to fetch non-existent user", { 
+                userId: id
+            })
             throw new NotFoundError("User not found")
         }
+
+        logger.info("Fetched user successfully", {
+            userId: user.id,
+            email: user.email
+        })
 
         return this.toDBUserDTO(user)
     }

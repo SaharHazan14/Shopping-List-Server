@@ -1,9 +1,14 @@
 import { Response, Request, NextFunction } from "express";
 import { NotFoundError, ForbiddenError, BadRequestError, ConflictError, UnauthorizedError } from "../errors/index.js"
-import logger from "../logger"
+import logger from "../logger.js"
 
-export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
-  logger.error('Unhandled error in request', { path: req.path, method: req.method, error: err })
+export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+  logger.error("Unhandled error", {
+    message: err.message,
+    stack: err.stack,
+    method: req.method,
+    path: req.originalUrl,
+  });
 
   if (err instanceof BadRequestError) {
     return res.status(400).json({ message: err.message})
@@ -25,5 +30,5 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
     return res.status(409).json({ message: err.message })
   }
 
-  return res.status(500).json({ message: "Internal server error" })
+  return res.status(500).json({ message: err.message || "Internal server error" })
 }
