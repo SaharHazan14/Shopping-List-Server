@@ -4,7 +4,7 @@ import { CreateItemDTO, UpdateItemDTO } from "./item.dto";
 
 export class ItemRepository {
     async create(dto : CreateItemDTO): Promise<Item> {
-        return prisma.item.create({
+        const created = await prisma.item.create({
             data: {
                 name: dto.name,
                 category: dto.category,
@@ -12,6 +12,7 @@ export class ItemRepository {
                 creator_id: dto.userId
             }
         })
+        return created
     }
 
     async existByNameAndCreator(name: string, creatorId: number): Promise<boolean> {
@@ -60,7 +61,7 @@ export class ItemRepository {
     }
 
     async update(dto: UpdateItemDTO): Promise<Item> {
-        return prisma.item.update({
+        const updated = await prisma.item.update({
             where: {id: dto.itemId},
             data: {
                 name: dto.name,
@@ -68,6 +69,7 @@ export class ItemRepository {
                 image: dto.imageUrl
             }
         })
+        return updated
     }
 
     async updateName(itemId: number, newName: string) {

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
+import logger from "../../logger"
 
 const region = process.env.AWS_REGION
 const userPoolId = process.env.COGNITO_USER_POOL_ID
@@ -16,6 +17,7 @@ const client = jwksClient({
 function getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
     client.getSigningKey(header.kid!, function (err, key) {
         if (err) {
+            logger.error('Failed to get signing key', { kid: header.kid, error: err })
             callback(err, undefined)
             return
         }

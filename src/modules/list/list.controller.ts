@@ -18,6 +18,7 @@ class ListController {
             description: req.body.description,
             creatorId: req.user.id 
         }
+
         const list = await service.createList(dto)
         res.status(201).json(list)
     }

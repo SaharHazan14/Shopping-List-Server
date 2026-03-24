@@ -4,7 +4,7 @@ import { CreateListDTO, UpdateListDTO, ListStatsDTO } from "./list.dto";
 
 export class ListRepository {
     async create(dto: CreateListDTO): Promise<List> {
-        return prisma.list.create({
+        const created = await prisma.list.create({
             data: {
                 title: dto.title,
                 description: dto.description,
@@ -17,6 +17,7 @@ export class ListRepository {
                 }
             }
         })
+        return created
     }
 
     async existByTitleAndCreator(title: string, creatorId: number): Promise<boolean> {
@@ -74,13 +75,14 @@ export class ListRepository {
     }
 
     async update(dto: UpdateListDTO) {
-        return prisma.list.update({
+        const updated = await prisma.list.update({
             where: {id: dto.id},
             data: { 
                 title: dto.title, 
                 description: dto.description
             }
         })
+        return updated
     }
 
     async delete(listId: number): Promise<void> {

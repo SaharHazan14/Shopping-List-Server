@@ -3,12 +3,13 @@ import axios from "axios"
 import { verifyCognitoIdToken } from "./token.service"
 import { UserService } from "../user/user.service"
 import { UserRepository } from "../user/user.repository"
+import logger from "../../logger"
 
 const userService = new UserService(new UserRepository())
 
 export async function exchangeCode(req: Request, res: Response) {
   const { code } = req.body
-  console.log("Received code:", code) // Debug log
+  logger.debug("Received authorization code", { hasCode: Boolean(code) })
   
   if (!code) {
     return res.status(400).json({ message: "Authorization code missing" })
@@ -25,7 +26,7 @@ export async function exchangeCode(req: Request, res: Response) {
       redirect_uri: process.env.CALLBACK_URL!
     })
 
-    console.log("Sending token request to Cognito with redirect URI:", process.env.CALLBACK_URL); // Debug log
+    logger.debug("Sending token request to Cognito", { redirectUri: process.env.CALLBACK_URL })
 
     const tokenResponse = await axios.post(
       `https://${process.env.COGNITO_DOMAIN}/oauth2/token`,
@@ -55,7 +56,7 @@ export async function exchangeCode(req: Request, res: Response) {
       refreshToken: refresh_token
     })
   } catch (err: any) {
-    console.error(err.response?.data || err.message)
+    logger.error('Token exchange failed', { error: err.response?.data || err.message })
     return res.status(500).json({ message: "Token exchange failed", error: err.response?.data })
   }
 }

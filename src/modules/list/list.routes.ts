@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { listController } from "./list.controller";
-import { validateRequest } from "../../middlewars/validateRequest";
+import { validateRequest } from "../../middlewares/validateRequest";
 import { AddListItemBodySchema, AddListMemberBodySchema, CreateListBodySchema, GetUserListsQuerySchema, 
          ListIdItemIdParamsSchema, ListIdMemberIdParamsSchema, ListIdParamSchema, UpdateListBodySchema, 
          UpdateListItemBodySchema, UpdateListMemberBodySchema } from "./list.schema";

@@ -15,6 +15,7 @@ class ItemController {
         }
 
         const item = await service.createItem(dto)
+        
         res.status(201).json(item)
     }
 

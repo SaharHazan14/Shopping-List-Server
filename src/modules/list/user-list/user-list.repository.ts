@@ -4,13 +4,14 @@ import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list.dto"
 
 export class UserListRepository {
     async create(dto: AddListMemberDTO): Promise<UserList> {
-        return prisma.userList.create({
+        const created = await prisma.userList.create({
             data: {
                 user_id: dto.memberId,
                 list_id: dto.listId,
                 role: dto.role
             }
         })
+        return created
     }
 
     // New API to get list members with their emails
@@ -57,7 +58,7 @@ export class UserListRepository {
     }
 
     async update(dto: UpdateListMemberDTO): Promise<UserList> {
-        return prisma.userList.update({
+        const updated = await prisma.userList.update({
             where: {
                 user_id_list_id: {
                     user_id: dto.memberId,
@@ -68,6 +69,7 @@ export class UserListRepository {
                 role: dto.role
             }
         })
+        return updated
     }
 
     async delete(userId: number, listId: number) {

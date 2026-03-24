@@ -4,7 +4,7 @@ import { AddListItemDTO, UpdateListItemDTO } from "./list-item.dto"
 
 export class ListItemRepository {
     async craete(dto: AddListItemDTO): Promise<ListItem> {
-        return prisma.listItem.create({
+        const created = await prisma.listItem.create({
             data: {
                 list_id: dto.listId,
                 item_id: dto.itemId,
@@ -12,6 +12,7 @@ export class ListItemRepository {
                 is_checked: dto.isChecked
             }
         })
+        return created
     }
 
     async findByListIdAndItemId(listId: number, itemId: number): Promise<ListItem | null> {
@@ -81,7 +82,7 @@ export class ListItemRepository {
     }
 
     async update(dto: UpdateListItemDTO): Promise<ListItem> {
-        return prisma.listItem.update({
+        const updated = await prisma.listItem.update({
             where: {
                 list_id_item_id: {
                     list_id: dto.listId,
@@ -93,6 +94,7 @@ export class ListItemRepository {
                 is_checked: dto.isChecked
             }
         })
+        return updated
     }
 
     async delete(listId: number, itemId: number): Promise<void> {

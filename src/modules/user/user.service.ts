@@ -2,6 +2,7 @@ import { User } from "../../../generated/prisma/client";
 import { NotFoundError } from "../../errors";
 import { CreateUserDTO, DBUserDTO } from "./user.dto";
 import { UserRepository } from "./user.repository";
+import logger from "../../logger";
 
 export class UserService {
     constructor(private readonly userRepository: UserRepository) {}
@@ -17,10 +18,20 @@ export class UserService {
     async getOrCreateUser(dto: CreateUserDTO): Promise<DBUserDTO> {
         const existingUser = await this.userRepository.findByCognitoSub(dto.cognitoSub)
         if (existingUser) {
+            logger.info("Fetched existing user successfully", { 
+                id: existingUser.id, 
+                email: existingUser.email 
+            })
             return this.toDBUserDTO(existingUser)
         }
 
-        return this.toDBUserDTO(await this.userRepository.create(dto))
+        const created = await this.userRepository.create(dto)
+        logger.info("New user created successfully", { 
+            id: created.id,
+            email: created.email
+         })
+
+        return this.toDBUserDTO(created)
     }
 
     async findByCognitoSub(cognitoSub: string): Promise<DBUserDTO | null> {
@@ -32,8 +43,16 @@ export class UserService {
         const user = await this.userRepository.findById(id)
         
         if (!user) {
+            logger.warn("Attempted to fetch non-existent user", { 
+                userId: id
+            })
             throw new NotFoundError("User not found")
         }
+
+        logger.info("Fetched user successfully", {
+            userId: user.id,
+            email: user.email
+        })
 
         return this.toDBUserDTO(user)
     }
