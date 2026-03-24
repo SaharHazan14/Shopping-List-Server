@@ -12,6 +12,7 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+// The connection URL is provided via `DATABASE_URL` environment variable in deployment.
 
 enum Role {
   OWNER

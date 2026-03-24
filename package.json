@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "npx prisma generate && tsc",
+    "start": "node dist/server.js",
+    "postinstall": "npx prisma generate",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:unit": "jest tests/unit",
