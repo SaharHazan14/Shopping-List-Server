@@ -1,5 +1,5 @@
 import { User } from "../../../generated/prisma/client"
-import { prisma } from "../../../prisma/prisma"
+import { prisma } from "../../prisma/prisma"
 import { CreateUserDTO } from "./user.dto"
 
 export class UserRepository {

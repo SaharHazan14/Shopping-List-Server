@@ -1,5 +1,5 @@
 import { Category, Item } from "../../../generated/prisma/client";
-import { prisma } from "../../../prisma/prisma";
+import { prisma } from "../../prisma/prisma";
 import { CreateItemDTO, UpdateItemDTO } from "./item.dto";
 
 export class ItemRepository {

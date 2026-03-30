@@ -1,5 +1,5 @@
 import { Role, UserList } from "../../../../generated/prisma/client";
-import { prisma } from "../../../../prisma/prisma";
+import { prisma } from "../../../prisma/prisma";
 import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list.dto"
 
 export class UserListRepository {
