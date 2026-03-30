@@ -21,11 +21,8 @@ app.use(
   })
 );
 
-app.get("/protected", authenticate, (req, res) => {
-  res.json({
-    message: "Access granted!",
-    user: req.user,
-  });
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 app.use('/auth', authRoutes)

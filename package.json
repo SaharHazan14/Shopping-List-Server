@@ -1,5 +1,5 @@
 {
-  "name": "hello-prisma-postgres",
+  "name": "shopping-list-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,6 +7,7 @@
     "build": "npx prisma generate && tsc",
     "start": "node dist/server.js",
     "postinstall": "npx prisma generate",
+    "release": "npx prisma migrate deploy && npx prisma generate",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:unit": "jest tests/unit",
@@ -24,7 +25,7 @@
     "@types/pg": "^8.15.6",
     "@types/supertest": "^6.0.3",
     "@types/winston": "^2.4.4",
-    "express": "^5.2.1",
+    
     "jest": "^30.2.0",
     "nodemon": "^3.1.11",
     "prisma": "^6.19.2",
@@ -34,6 +35,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "express": "^5.2.1",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.4.1",
     "axios": "^1.13.5",
