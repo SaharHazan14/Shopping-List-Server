@@ -1,4 +1,4 @@
-import { Category } from "../../../generated/prisma/enums";
+import { Category } from "@prisma/client" 
 
 export interface CreateItemDTO {
     name: string,

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { ZodType } from 'zod'
-import { BadRequestError } from '../errors'
-import logger from '../logger'
+import { BadRequestError } from '../errors/index.js'
+import logger from '../logger.js'
 
 type Schemas = {
   params?: ZodType<unknown>

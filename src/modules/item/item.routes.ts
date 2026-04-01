@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { itemController } from "./item.controller";
-import { validateRequest } from "../../middlewares/validateRequest";
-import { CreateItemBodySchema, GetUserItemsQuerySchema, ItemIdParamSchema, UpdateItemBodySchema } from "./item.schema";
+import { itemController } from "./item.controller.js";
+import { validateRequest } from "../../middlewares/validateRequest.js";
+import { CreateItemBodySchema, GetUserItemsQuerySchema, ItemIdParamSchema, UpdateItemBodySchema } from "./item.schema.js";
 
 const router = Router()
 

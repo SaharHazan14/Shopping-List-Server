@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { ItemService } from "./item.service";
-import { ItemRepository } from "./item.repository";
-import { CreateItemDTO, UpdateItemDTO } from "./item.dto";
+import { ItemService } from "./item.service.js";
+import { ItemRepository } from "./item.repository.js";
+import { CreateItemDTO, UpdateItemDTO } from "./item.dto.js";
 
 const service = new ItemService(new ItemRepository)
 

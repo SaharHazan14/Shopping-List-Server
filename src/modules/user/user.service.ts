@@ -1,8 +1,8 @@
-import { User } from "../../../generated/prisma/client";
-import { NotFoundError } from "../../errors";
-import { CreateUserDTO, DBUserDTO } from "./user.dto";
-import { UserRepository } from "./user.repository";
-import logger from "../../logger";
+import { User } from "@prisma/client";
+import { NotFoundError } from "../../errors/index.js";
+import { CreateUserDTO, DBUserDTO } from "./user.dto.js";
+import { UserRepository } from "./user.repository.js";
+import logger from "../../logger.js";
 
 export class UserService {
     constructor(private readonly userRepository: UserRepository) {}

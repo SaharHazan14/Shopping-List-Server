@@ -1,6 +1,6 @@
-import { Role, UserList } from "../../../../generated/prisma/client";
-import { prisma } from "../../../../prisma/prisma";
-import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list.dto"
+import { Role, UserList } from "@prisma/client"
+import { prisma } from "../../../prisma.js";
+import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list.dto.js"
 
 export class UserListRepository {
     async create(dto: AddListMemberDTO): Promise<UserList> {
@@ -27,7 +27,7 @@ export class UserListRepository {
             }
         })
 
-        return rows.map(r => ({
+        return rows.map((r: UserList & { user: { email: string } }) => ({
             listId: r.list_id,
             memberId: r.user_id,
             role: r.role,

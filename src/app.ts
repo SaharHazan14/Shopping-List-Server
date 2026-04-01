@@ -1,12 +1,12 @@
 import express from 'express';
-import userRoutes from './modules/user/user.routes'
-import listRoutes from './modules/list/list.routes'
-import itemRoutes from './modules/item/item.routes'
-import authRoutes from './modules/auth/auth.routes'
-import { errorHandler } from './middlewares/error.middleware';
-import { authenticate } from './middlewares/auth.middleware';
+import userRoutes from './modules/user/user.routes.js'
+import listRoutes from './modules/list/list.routes.js'
+import itemRoutes from './modules/item/item.routes.js'
+import authRoutes from './modules/auth/auth.routes.js'
+import { errorHandler } from './middlewares/error.middleware.js';
+import { authenticate } from './middlewares/auth.middleware.js';
 import cors from 'cors';
-import { requestLogger } from './middlewares/requestLogger';
+import { requestLogger } from './middlewares/requestLogger.js';
 
 const app = express();
 
@@ -21,11 +21,8 @@ app.use(
   })
 );
 
-app.get("/protected", authenticate, (req, res) => {
-  res.json({
-    message: "Access granted!",
-    user: req.user,
-  });
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 app.use('/auth', authRoutes)

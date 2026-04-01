@@ -1,15 +1,15 @@
-import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../errors";
-import { CreateListDTO, UpdateListDTO, ListResponseDTO, ListStatsDTO } from "./list.dto";
-import { ListRepository } from "./list.repository";
-import { AddListMemberDTO, UpdateListMemberDTO, ListMemberResponseDTO } from "./user-list/user-list.dto";
-import { Role } from "../../../generated/prisma/enums";
-import { AddListItemDTO, UpdateListItemDTO, ListItemResponseDTO, ListItemWithNameDTO } from "./list-item/list-item.dto";
-import { ItemRepository } from "../item/item.repository";
-import { ListItemRepository } from "./list-item/list-Item.repository";
-import { UserListRepository } from "./user-list/user-list.repository";
-import { UserRepository } from "../user/user.repository";
-import { List, ListItem, UserList } from "../../../generated/prisma/client";
-import logger from "../../logger";
+import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../errors/index.js";
+import { CreateListDTO, UpdateListDTO, ListResponseDTO, ListStatsDTO } from "./list.dto.js";
+import { ListRepository } from "./list.repository.js";
+import { AddListMemberDTO, UpdateListMemberDTO, ListMemberResponseDTO } from "./user-list/user-list.dto.js";
+import { Role } from "@prisma/client"
+import { AddListItemDTO, UpdateListItemDTO, ListItemResponseDTO, ListItemWithNameDTO } from "./list-item/list-item.dto.js";
+import { ItemRepository } from "../item/item.repository.js";
+import { ListItemRepository } from "./list-item/list-Item.repository.js";
+import { UserListRepository } from "./user-list/user-list.repository.js";
+import { UserRepository } from "../user/user.repository.js";
+import { List, ListItem, UserList } from "@prisma/client"
+import logger from "../../logger.js";
 
 export class ListService {
     constructor(
@@ -360,7 +360,7 @@ export class ListService {
             count: listItems.length 
         })
 
-        return listItems.map(listItem => {
+        return listItems.map((listItem: ListItem & { item: { name: string } }) => {
             return {
                 listId: listItem.list_id,
                 itemId: listItem.item_id,

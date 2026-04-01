@@ -1,6 +1,6 @@
-import { User } from "../../../generated/prisma/client"
-import { prisma } from "../../../prisma/prisma"
-import { CreateUserDTO } from "./user.dto"
+import { User } from "@prisma/client"
+import { prisma } from "../../prisma.js"
+import { CreateUserDTO } from "./user.dto.js"
 
 export class UserRepository {
     async create(dto: CreateUserDTO): Promise<User> {

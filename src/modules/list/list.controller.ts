@@ -1,13 +1,13 @@
 import { Request, Response } from "express"
-import { ListService } from "./list.service"
-import { ListRepository } from "./list.repository"
-import { CreateListDTO, UpdateListDTO } from "./list.dto"
-import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list/user-list.dto"
-import { ItemRepository } from "../item/item.repository"
-import { UserListRepository } from "./user-list/user-list.repository"
-import { ListItemRepository } from "./list-item/list-Item.repository"
-import { AddListItemDTO, UpdateListItemDTO } from "./list-item/list-item.dto"
-import { UserRepository } from "../user/user.repository"
+import { ListService } from "./list.service.js"
+import { ListRepository } from "./list.repository.js"
+import { CreateListDTO, UpdateListDTO } from "./list.dto.js"
+import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list/user-list.dto.js"
+import { ItemRepository } from "../item/item.repository.js"
+import { UserListRepository } from "./user-list/user-list.repository.js"
+import { ListItemRepository } from "./list-item/list-Item.repository.js"
+import { AddListItemDTO, UpdateListItemDTO } from "./list-item/list-item.dto.js"
+import { UserRepository } from "../user/user.repository.js"
 
 const service = new ListService(new ListRepository, new ItemRepository, new UserListRepository, new ListItemRepository, new UserRepository())
 

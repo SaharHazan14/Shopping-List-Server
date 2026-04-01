@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { Category } from "../../../generated/prisma/enums"
+import { Category } from "@prisma/client"
 
 const idSchema = z.coerce.number().int().positive()
 

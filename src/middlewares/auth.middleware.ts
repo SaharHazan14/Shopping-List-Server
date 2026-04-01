@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { BadRequestError, UnauthorizedError } from "../errors";
-import { verifyCognitoAccessToken } from "../modules/auth/token.service";
-import { UserService } from "../modules/user/user.service";
-import { UserRepository } from "../modules/user/user.repository";
-import logger from "../logger";
+import { BadRequestError, UnauthorizedError } from "../errors/index.js";
+import { verifyCognitoAccessToken } from "../modules/auth/token.service.js";
+import { UserService } from "../modules/user/user.service.js";
+import { UserRepository } from "../modules/user/user.repository.js";
+import logger from "../logger.js";
 
 const userService = new UserService(new UserRepository())
 

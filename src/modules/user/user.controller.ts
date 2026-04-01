@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
-import { UserService } from "./user.service"
-import { UserRepository } from "./user.repository"
+import { UserService } from "./user.service.js"
+import { UserRepository } from "./user.repository.js"
 
 const service = new UserService(new UserRepository())
 

@@ -1,6 +1,6 @@
-import { ListItem } from "../../../../generated/prisma/client";
-import { prisma } from "../../../../prisma/prisma"; 
-import { AddListItemDTO, UpdateListItemDTO } from "./list-item.dto"
+import { ListItem } from "@prisma/client"
+import { prisma } from "../../../prisma.js"; 
+import { AddListItemDTO, UpdateListItemDTO } from "./list-item.dto.js"
 
 export class ListItemRepository {
     async craete(dto: AddListItemDTO): Promise<ListItem> {
