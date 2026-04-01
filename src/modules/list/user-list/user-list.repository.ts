@@ -1,6 +1,6 @@
-import { Role, UserList } from "../../../generated/prisma/client";
-import { prisma } from "../../../prisma/prisma";
-import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list.dto"
+import { Role, UserList } from "@prisma/client"
+import { prisma } from "../../../prisma.js";
+import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list.dto.js"
 
 export class UserListRepository {
     async create(dto: AddListMemberDTO): Promise<UserList> {

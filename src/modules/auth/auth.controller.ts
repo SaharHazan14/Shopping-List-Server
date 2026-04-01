@@ -1,9 +1,9 @@
 import { Request, Response } from "express"
 import axios from "axios"
-import { verifyCognitoIdToken } from "./token.service"
-import { UserService } from "../user/user.service"
-import { UserRepository } from "../user/user.repository"
-import logger from "../../logger"
+import { verifyCognitoIdToken } from "./token.service.js"
+import { UserService } from "../user/user.service.js"
+import { UserRepository } from "../user/user.repository.js"
+import logger from "../../logger.js"
 
 const userService = new UserService(new UserRepository())
 

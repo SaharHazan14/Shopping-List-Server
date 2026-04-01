@@ -1,8 +1,8 @@
-import { Item } from "../..//generated/prisma/client";
-import { ConflictError, ForbiddenError, NotFoundError } from "../../errors";
-import { CreateItemDTO, UpdateItemDTO, ItemResponseDTO } from "./item.dto";
-import { ItemRepository } from "./item.repository";
-import logger from "../../logger";
+import { Item } from "@prisma/client"
+import { ConflictError, ForbiddenError, NotFoundError } from "../../errors/index.js";
+import { CreateItemDTO, UpdateItemDTO, ItemResponseDTO } from "./item.dto.js";
+import { ItemRepository } from "./item.repository.js";
+import logger from "../../logger.js";
 
 export class ItemService{
     constructor(private readonly repository: ItemRepository) {}

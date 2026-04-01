@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { listController } from "./list.controller";
-import { validateRequest } from "../../middlewares/validateRequest";
+import { listController } from "./list.controller.js";
+import { validateRequest } from "../../middlewares/validateRequest.js";
 import { AddListItemBodySchema, AddListMemberBodySchema, CreateListBodySchema, GetUserListsQuerySchema, 
          ListIdItemIdParamsSchema, ListIdMemberIdParamsSchema, ListIdParamSchema, UpdateListBodySchema, 
-         UpdateListItemBodySchema, UpdateListMemberBodySchema } from "./list.schema";
+         UpdateListItemBodySchema, UpdateListMemberBodySchema } from "./list.schema.js";
 
 const router = Router();
 

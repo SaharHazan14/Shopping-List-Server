@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
-import logger from "../../logger"
+import logger from "../../logger.js"
 
 const region = process.env.AWS_REGION
 const userPoolId = process.env.COGNITO_USER_POOL_ID
