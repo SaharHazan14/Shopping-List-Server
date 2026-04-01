@@ -2,13 +2,13 @@ import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from ".
 import { CreateListDTO, UpdateListDTO, ListResponseDTO, ListStatsDTO } from "./list.dto";
 import { ListRepository } from "./list.repository";
 import { AddListMemberDTO, UpdateListMemberDTO, ListMemberResponseDTO } from "./user-list/user-list.dto";
-import { Role } from "../../../generated/prisma/enums";
+import { Role } from "../../generated/prisma/enums";
 import { AddListItemDTO, UpdateListItemDTO, ListItemResponseDTO, ListItemWithNameDTO } from "./list-item/list-item.dto";
 import { ItemRepository } from "../item/item.repository";
 import { ListItemRepository } from "./list-item/list-Item.repository";
 import { UserListRepository } from "./user-list/user-list.repository";
 import { UserRepository } from "../user/user.repository";
-import { List, ListItem, UserList } from "../../../generated/prisma/client";
+import { List, ListItem, UserList } from "../../generated/prisma/client";
 import logger from "../../logger";
 
 export class ListService {
@@ -360,7 +360,7 @@ export class ListService {
             count: listItems.length 
         })
 
-        return listItems.map(listItem => {
+        return listItems.map((listItem: ListItem & { item: { name: string } }) => {
             return {
                 listId: listItem.list_id,
                 itemId: listItem.item_id,

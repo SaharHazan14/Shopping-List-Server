@@ -1,4 +1,4 @@
-import { Item } from "../../../generated/prisma/client";
+import { Item } from "../..//generated/prisma/client";
 import { ConflictError, ForbiddenError, NotFoundError } from "../../errors";
 import { CreateItemDTO, UpdateItemDTO, ItemResponseDTO } from "./item.dto";
 import { ItemRepository } from "./item.repository";
