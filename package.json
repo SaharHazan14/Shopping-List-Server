@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npx prisma generate && tsc",
+    "build": "npx prisma generate && npx prisma migrate deploy && tsc",
     "start": "node dist/server.js",
     "postinstall": "npx prisma generate",
     "release": "npx prisma migrate deploy && npx prisma generate",
