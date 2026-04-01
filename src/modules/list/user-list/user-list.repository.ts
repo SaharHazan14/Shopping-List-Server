@@ -1,4 +1,4 @@
-import { Role, UserList } from "../../../../generated/prisma/client";
+import { Role, UserList } from "../../../generated/prisma/client";
 import { prisma } from "../../../prisma/prisma";
 import { AddListMemberDTO, UpdateListMemberDTO } from "./user-list.dto"
 
@@ -27,7 +27,7 @@ export class UserListRepository {
             }
         })
 
-        return rows.map(r => ({
+        return rows.map((r: UserList & { user: { email: string } }) => ({
             listId: r.list_id,
             memberId: r.user_id,
             role: r.role,

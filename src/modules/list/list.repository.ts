@@ -1,4 +1,4 @@
-import { List, Role } from "../../../generated/prisma/client";
+import { List, Role } from "../../generated/prisma/client";
 import { prisma } from "../../prisma/prisma";
 import { CreateListDTO, UpdateListDTO, ListStatsDTO } from "./list.dto";
 

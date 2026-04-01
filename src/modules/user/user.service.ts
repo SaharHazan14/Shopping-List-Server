@@ -1,4 +1,4 @@
-import { User } from "../../../generated/prisma/client";
+import { User } from "../../generated/prisma/client";
 import { NotFoundError } from "../../errors";
 import { CreateUserDTO, DBUserDTO } from "./user.dto";
 import { UserRepository } from "./user.repository";

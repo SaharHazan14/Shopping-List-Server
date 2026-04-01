@@ -1,4 +1,4 @@
-import { ListItem } from "../../../../generated/prisma/client";
+import { ListItem } from "../../../generated/prisma/client";
 import { prisma } from "../../../prisma/prisma"; 
 import { AddListItemDTO, UpdateListItemDTO } from "./list-item.dto"
 

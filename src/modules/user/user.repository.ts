@@ -1,4 +1,4 @@
-import { User } from "../../../generated/prisma/client"
+import { User } from "../../generated/prisma/client"
 import { prisma } from "../../prisma/prisma"
 import { CreateUserDTO } from "./user.dto"
 
